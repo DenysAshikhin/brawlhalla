@@ -50,6 +50,7 @@ if local == 'remote':
 print(f"Going to update {local}-y  at {update} seconds interval")
 
 print('trying to launch policy client')
+print(f"http://{args.ip}:55556")
 client = PolicyClient(address=f"http://{args.ip}:55556", update_interval=60, inference_mode=local)
 
 

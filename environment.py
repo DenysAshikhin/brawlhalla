@@ -120,7 +120,8 @@ class BrawlEnv(ExternalEnv):
 
         self.daemon = True
 
-        self.observation_space = spaces.Tuple(640, 480, 3)
+        self.observation_space = spaces.Box(low=0, high=255,
+                                                               shape=(480, 640, 3), dtype=np.uint8)
 
         self.action_space = spaces.MultiDiscrete(
             [

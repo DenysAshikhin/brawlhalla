@@ -1,12 +1,11 @@
-import os
+from gym import spaces
 import ray
 from ray.rllib.agents import with_common_config
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.env import PolicyServerInput
-from ray.tune.logger import pretty_print
 
 from ray.rllib.examples.env.random_env import RandomEnv
-from gym import spaces
+
 import numpy as np
 import argparse
 
@@ -35,7 +34,7 @@ DEFAULT_CONFIG = with_common_config({
     "rollout_fragment_length": 64,
     # Number of timesteps collected for each SGD round. This defines the size
     # of each SGD epoch.
-    "train_batch_size": 32768,
+    "train_batch_size": 4096,
     # Total SGD batch size across all devices for SGD. This defines the
     # minibatch size within each epoch.
     "sgd_minibatch_size": 512,
@@ -56,12 +55,33 @@ DEFAULT_CONFIG = with_common_config({
         # important to tune vf_loss_coeff.
         "vf_share_layers": False,
 
-        "fcnet_hiddens": [1280, 1280],
-        "fcnet_activation": "relu",
-        "use_lstm": True,
-        "max_seq_len": 32,
-        "lstm_cell_size": 512,
-        "lstm_use_prev_action": False
+        # VisionNetwork (tf and torch): rllib.models.tf|torch.visionnet.py
+        # These are used if no custom model is specified and the input space is 2D.
+        # Filter config: List of [out_channels, kernel, stride] for each filter.
+        # Example:
+        # Use None for making RLlib try to find a default filter setup given the
+        # observation space.
+        "conv_filters": [
+            [16, [24, 32], [14, 18]],
+            [32, [6, 6], 4],
+            [256, [9, 9], 1],
+        ],
+        # Activation function descriptor.
+        # Supported values are: "tanh", "relu", "swish" (or "silu"),
+        # "linear" (or None).
+        "conv_activation": "relu",
+
+        # Some default models support a final FC stack of n Dense layers with given
+        # activation:
+        # - Complex observation spaces: Image components are fed through
+        #   VisionNets, flat Boxes are left as-is, Discrete are one-hot'd, then
+        #   everything is concated and pushed through this final FC stack.
+        # - VisionNets (CNNs), e.g. after the CNN stack, there may be
+        #   additional Dense layers.
+        # - FullyConnectedNetworks will have this additional FCStack as well
+        # (that's why it's empty by default).
+        "post_fcnet_hiddens": [28],
+        "post_fcnet_activation": "relu",
     },
     # Coefficient of the entropy regularizer.
     "entropy_coeff": 0.00005,
@@ -82,7 +102,7 @@ DEFAULT_CONFIG = with_common_config({
     # usually slower, but you might want to try it if you run into issues with
     # # the default optimizer.
     "simple_optimizer": True,
-    #"reuse_actors": True,
+    # "reuse_actors": True,
     "num_gpus": 1,
     # Use the connector server to generate experiences.
     "input": (
@@ -95,7 +115,7 @@ DEFAULT_CONFIG = with_common_config({
     # "callbacks": MyCallbacks,
     "env": RandomEnv,
     "env_config": {
-    "sleep": True
+        "sleep": True
     },
     "framework": "tf",
     # "eager_tracing": True,
@@ -120,27 +140,32 @@ DEFAULT_CONFIG = with_common_config({
     "create_env_on_driver": False,
     "log_sys_usage": False,
     # "normalize_actions": False,
-    "compress_observations": True
+    "compress_observations": True,
     # Whether to fake GPUs (using CPUs).
     # Set this to True for debugging on non-GPU machines (set `num_gpus` > 0).
-    #"_fake_gpus": True,
+    "_fake_gpus": True
 })
 
-allianceId = 27
-heroId = 72
-localHeroId = 100
-itemId = 70
-localItemId = 13
-x = 8
-y = 5
-tier = 6
-DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Tuple(640, 480, 3),
+DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Box(low=0, high=255,
+                                                               shape=(480, 640, 3), dtype=np.uint8)
 
-DEFAULT_CONFIG["env_config"]["action_space"] = spaces.MultiDiscrete([8, 8, 5])
+DEFAULT_CONFIG["env_config"]["action_space"] = spaces.MultiDiscrete(
+    [
+        2,  # W
+        2,  # A
+        2,  # S
+        2,  # D
+        2,  # Space
+        2,  # H
+        2,  # J
+        2,  # K
+        2  # L
+    ]
+)
 
 ray.init(log_to_driver=False)
 
-#print(f"running on: {args.ip}:44444")
+# print(f"running on: {args.ip}:44444")
 
 # trainer = DDPPOTrainer(config=DEFAULT_CONFIG)
 
@@ -153,11 +178,11 @@ trainer = PPOTrainer
 # checkpoint_path = CHECKPOINT_FILE.format(args.run)
 
 
-#checkpoint_path = "checkpointsA/"
+# checkpoint_path = "checkpointsA/"
 
-#print(args.checkpoint)
+# print(args.checkpoint)
 
-#if args.checkpoint:
+# if args.checkpoint:
 #    # Attempt to restore from checkpoint, if possible.
 #    if os.path.exists(args.checkpoint):
 #        print('path FOUND!')
@@ -167,8 +192,8 @@ trainer = PPOTrainer
 #        print("That path does not exist!")
 
 ## Serving and training loop.
-#i = 0
-#while True:
+# i = 0
+# while True:
 
 #   print(pretty_print(trainer.train()))
 #   print(f"Finished train run #{i + 1}")
@@ -178,10 +203,12 @@ trainer = PPOTrainer
 #        print("Last checkpoint", checkpoint)
 
 from ray import tune
+
 name = "" + args.checkpoint
 print(f"Starting: {name}")
 tune.run(trainer,
-#resume = True,
-config=DEFAULT_CONFIG, name=name, keep_checkpoints_num = None, checkpoint_score_attr = "episode_reward_mean", max_failures = 1,
-#restore="C:\\Users\\ashyk\\ray_results\\TEST_32k-batch_512-len_32_Run-2\\PPO_RandomEnv_46610_00000_0_2021-12-31_17-30-37\\checkpoint_000027\\checkpoint-27",
-checkpoint_freq = 1, checkpoint_at_end = True)
+         # resume = True,
+         config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
+         max_failures=1,
+         # restore="C:\\Users\\ashyk\\ray_results\\TEST_32k-batch_512-len_32_Run-2\\PPO_RandomEnv_46610_00000_0_2021-12-31_17-30-37\\checkpoint_000027\\checkpoint-27",
+         checkpoint_freq=1, checkpoint_at_end=True)
