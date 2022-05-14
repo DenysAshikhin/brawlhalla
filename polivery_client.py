@@ -157,7 +157,9 @@ while True:
 
             episode_id = client.start_episode(episode_id=None)
 
+            print("updating weights")
             client.update_policy_weights()
+            print("restarting round")
             env.restartRound()
 
     # print('finished logging step')

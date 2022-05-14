@@ -232,6 +232,7 @@ class BrawlEnv(ExternalEnv):
 
         self.enemyStock = 3
         self.currentStock = 3
+        self.releaseAllKeys()
 
         for i in range(6):
             keyHold(KEY_C)
@@ -241,14 +242,23 @@ class BrawlEnv(ExternalEnv):
 
     def releaseAllKeys(self):
         keyRelease(KEY_SPACE)
+        time.sleep(0.1)
         keyRelease(KEY_W)
+        time.sleep(0.1)
         keyRelease(KEY_A)
+        time.sleep(0.1)
         keyRelease(KEY_S)
+        time.sleep(0.1)
         keyRelease(KEY_D)
+        time.sleep(0.1)
         keyRelease(KEY_H)
+        time.sleep(0.1)
         keyRelease(KEY_J)
+        time.sleep(0.1)
         keyRelease(KEY_K)
+        time.sleep(0.1)
         keyRelease(KEY_L)
+        time.sleep(0.1)
         keyRelease(KEY_C)
 
 
@@ -280,7 +290,7 @@ class BrawlEnv(ExternalEnv):
 
             if my_stock != self.currentStock:
                 reward -= 0.33
-                my_stock = self.currentStock
+                self.currentStock = my_stock
 
 
             if enemy_stock != self.enemyStock:
