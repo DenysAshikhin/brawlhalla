@@ -89,6 +89,8 @@ counter = 0
 startTime = time.time()
 endTime = time.time()
 
+env.restartRound()
+
 
 while True:
 
@@ -101,8 +103,10 @@ while True:
     #     startTime = time.time()
     #     counter = 0
 
-    gameObservation = env.getObservation()
-
+    gameObservation, reward, gameOver = env.getObservation()
+    # print(gameObservation)
+    # print(env.observation_space.contains(gameObservation))
+    print(reward, gameOver)
 
     if not env.observation_space.contains(gameObservation):
         print(gameObservation)
@@ -114,8 +118,7 @@ while True:
     action = None
 
     action = client.get_action(episode_id=episode_id, observation=gameObservation)
-
-    reward = env.act(action)
+    env.act(action)
 
     runningReward += reward
     # act_time = time.time() - act_time
@@ -125,10 +128,37 @@ while True:
 
 
     # Updating the model after every game in case there is a new one
-    client.update_policy_weights()
-    env.restartRound()
 
 
+
+    if gameOver:
+
+            if reward <= -1:
+
+                print( f"GAME OVER! WE Lost final reward: {runningReward}!")
+
+            else:
+                print(f"GAME OVER! WE Won final reward: {runningReward}!")
+
+            runningReward = 0
+            reward = 0
+            # need to call a reset of env here
+            finalObs, reward, gameOver = env.underlord.getObservation()
+
+            if not env.observation_space.contains(finalObs):
+                print(gameObservation)
+                print("Not lined up 3")
+                sys.exit()
+
+
+            client.end_episode(episode_id=episode_id, observation=finalObs)
+
+
+
+            episode_id = client.start_episode(episode_id=None)
+
+            client.update_policy_weights()
+            env.restartRound()
 
     # print('finished logging step')
 
@@ -139,44 +169,5 @@ while True:
     # print(
     #     f"Round: {gameObservation[5]} - Time Left: {gameObservation[12]} - Obs duration: {obs_time} - Act duration: {act_time} - Overall duration: {time.time() - start_time}")
 
-
-
-
-
-
-    # if finalPosition != 0:
-    #     print(env.underlord.rewardSummary)
-    #     print(
-    #         f"GAME OVER! final position: {finalPosition} - final reward: {runningReward} - bought: {env.underlord.localHeroID} heroes!")
-    #     runningReward = 0
-    #     reward = 0
-    #     # need to call a reset of env here
-    #     finalObs = env.underlord.getObservation()
-    #
-    #     if not env.observation_space.contains(finalObs):
-    #         print(gameObservation)
-    #         print("Not lined up 3")
-    #         sys.exit()
-    #
-    #     if not env.observation_space.contains(finalObs):
-    #         print(gameObservation)
-    #         print("Not lined up 4")
-    #
-    #
-    #     client.end_episode(episode_id=episode_id, observation=finalObs)
-    #     env.underlord.resetEnv()
-    #     # fileWriter = logger(episode_id)
-    #     # fileWriter.createLog()
-    #     # fileWriter.writeLog(replayList)
-    #     # replayList.clear()
-    #
-    #     # if forced:
-    #     #     # print("Updating policy weights")
-    #     #     client.update_policy_weights()
-    #     #     print('Updated policy weights')
-    #
-    #     episode_id = client.start_episode(episode_id=None)
-    #
-    #
 
 

@@ -146,8 +146,8 @@ DEFAULT_CONFIG = with_common_config({
     "_fake_gpus": True
 })
 
-DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Box(low=0, high=255,
-                                                               shape=(480, 640, 3), dtype=np.uint8)
+DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Box(low=0, high=1,
+                                                               shape=(480, 640, 3), dtype=np.float32)
 
 DEFAULT_CONFIG["env_config"]["action_space"] = spaces.MultiDiscrete(
     [

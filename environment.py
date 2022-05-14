@@ -109,8 +109,7 @@ class BrawlEnv(ExternalEnv):
 
         self.daemon = True
 
-        self.observation_space = spaces.Box(low=0, high=255,
-                                                               shape=(480, 640, 3), dtype=np.uint8)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(480, 640, 3), dtype=np.float32)
 
         self.action_space = spaces.MultiDiscrete(
             [
@@ -158,6 +157,9 @@ class BrawlEnv(ExternalEnv):
         self.width = width
         self.height = height
 
+        self.currentStock = 3
+        self.enemyStock = 3
+
 
 
         print('got past main loop')
@@ -167,6 +169,9 @@ class BrawlEnv(ExternalEnv):
         return None
 
     def restartRound(self):
+
+        self.enemyStock = 3
+        self.currentStock = 3
 
         for i in range(6):
             keyHold(KEY_C)
@@ -189,11 +194,34 @@ class BrawlEnv(ExternalEnv):
         enemy_stock_img = enemy_stock_img[:,:,1]
 
         my_stock = countLife(my_stock_img, self.templates)
-        enemy_stock_img = countLife(enemy_stock_img, self.templates)
+        enemy_stock = countLife(enemy_stock_img, self.templates)
+
+        print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
+
+        reward = 0
+
+        gameOver = False
+
+        if my_stock != self.currentStock:
+            reward -= 0.33
+
+        if enemy_stock != self.enemyStock:
+            reward += 0.33
+
+
+        if enemy_stock == 0:
+            gameOver = True
+            reward += 1
+
+        if my_stock == 0:
+            gameOver = True
+            reward -= 1
+
 
         full_screen_all = full_screen_all / 255.0
 
-        return full_screen_all
+        return (full_screen_all, reward,gameOver)
+
 
     def act(self, actions):
 
