@@ -1,23 +1,10 @@
-import time
-
-import cv2 as cv
 import numpy
-import numpy as np
-from matplotlib import pyplot as plt
-# from pynput.mouse import Button, Controller
 import ctypes
-import sys
-import time
-
-import pywintypes
 import win32con
 import win32gui
-from PIL import ImageGrab
 import pygetwindow
-import pyautogui as auto
 
-import mouse
-
+import time
 import mss
 from ctypes import windll
 import win32api
@@ -52,6 +39,8 @@ KEY_J = char2key('j')
 KEY_K = char2key('k')
 KEY_L = char2key('l')
 
+KEY_C = char2key('c')
+
 def keyHold(key):
 
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), 0, 0)
@@ -61,45 +50,19 @@ def keyRelease(key):
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), win32con.KEYEVENTF_KEYUP, 0)
 
 
-
-
-
-import os
-from tkinter import Tk
 import numpy as np
 from gym import spaces
-from PIL import ImageTk, Image
-import gym
 
-# from tkinter import Frame, Tk, Label
-
-# from mttkinter import mtTkinter
-
-
-from ray.rllib.agents.ppo import DDPPOTrainer, ppo
-from ray.tune import register_env
-
-from ray import tune
-
-from ray.rllib.utils.typing import EnvActionType, EnvObsType, EnvInfoDict
-import threading
 import uuid
-from typing import Optional
 
 from six.moves import queue
-import ray
-from ray import serve
 
-import requests
-import logging
 import threading
 import time
 from typing import Union, Optional
 
-import ray.cloudpickle as pickle
+
 from ray.rllib.env import ExternalEnv, MultiAgentEnv, ExternalMultiAgentEnv
-from ray.rllib.policy.sample_batch import MultiAgentBatch
-from ray.rllib.utils.annotations import PublicAPI
 from ray.rllib.utils.typing import MultiAgentDict, EnvInfoDict, EnvObsType, EnvActionType
 
 
@@ -173,13 +136,73 @@ class BrawlEnv(ExternalEnv):
 
         print('got past main loop')
 
-    def getObservatioN(self):
-        full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)
-        return full_screen_all[:, :, :3]
+    def startInitialGame(self):
+
+        return None
+
+    def restartRound(self):
+
+        for i in range(6):
+            keyHold(KEY_C)
+            time.sleep(0.1)
+            keyRelease(KEY_C)
+            time.sleep(0.5)
+
+
+
+
+    def getObservation(self):
+        full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
+        full_screen_all = full_screen_all / 255
+        return full_screen_all
 
     def act(self, actions):
-        print("Got following actions:")
-        print(actions)
+
+        if actions[0] == 0:
+            keyRelease(KEY_W)
+        else:
+            keyHold(KEY_W)
+
+        if actions[1] == 0:
+            keyRelease(KEY_A)
+        else:
+            keyHold(KEY_A)
+
+        if actions[2] == 0:
+            keyRelease(KEY_S)
+        else:
+            keyHold(KEY_S)
+
+        if actions[3] == 0:
+            keyRelease(KEY_D)
+        else:
+            keyHold(KEY_D)
+
+        if actions[4] == 0:
+            keyRelease(KEY_SPACE)
+        else:
+            keyHold(KEY_SPACE)
+
+        if actions[5] == 0:
+            keyRelease(KEY_H)
+        else:
+            keyHold(KEY_H)
+
+        if actions[6] == 0:
+            keyRelease(KEY_J)
+        else:
+            keyHold(KEY_J)
+
+        if actions[7] == 0:
+            keyRelease(KEY_K)
+        else:
+            keyHold(KEY_K)
+
+        if actions[8] == 0:
+            keyRelease(KEY_L)
+        else:
+            keyHold(KEY_L)
+
         return 0
 
     def run(self):  # if I can't get this to work, try not overriding it in the first place?
@@ -294,6 +317,7 @@ class BrawlEnv(ExternalEnv):
         episode = self._get(episode_id)
         self._finished.add(episode.episode_id)
         episode.done(observation)
+
 
     def _get(self, episode_id: str) -> "_ExternalEnvEpisode":
         """Get a started episode or raise an error."""

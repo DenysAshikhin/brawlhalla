@@ -51,7 +51,10 @@ print(f"Going to update {local}-y  at {update} seconds interval")
 
 print('trying to launch policy client')
 print(f"http://{args.ip}:55556")
-client = PolicyClient(address=f"http://{args.ip}:55556", update_interval=60, inference_mode=local)
+
+#Setting update_interval to false, so it doesn't update in middle of games, will be manually updating it between games
+client = PolicyClient(address=f"http://{args.ip}:55556", update_interval=False, inference_mode=local)
+# client = PolicyClient(address=f"http://{args.ip}:55556", update_interval=60, inference_mode=local)
 
 
 forced = True
@@ -81,7 +84,22 @@ update = True
 runningReward = 0
 
 
+counter = 0
+
+startTime = time.time()
+endTime = time.time()
+
+
 while True:
+
+
+    # average out to ~30actions a second
+    # counter = counter + 1
+    # endTime = time.time()
+    # if(endTime - startTime) > 1:
+    #     print(f"actions per second: {counter}")
+    #     startTime = time.time()
+    #     counter = 0
 
     gameObservation = env.getObservation()
 
@@ -104,6 +122,14 @@ while True:
     # print("--- %s seconds to get do action ---" % (time.time() - start_time))
     # print(f"running reward: {reward}")
     client.log_returns(episode_id=episode_id, reward=reward)
+
+
+    # Updating the model after every game in case there is a new one
+    client.update_policy_weights()
+    env.restartRound()
+
+
+
     # print('finished logging step')
 
     # print("--- %s seconds to get finish logging return ---" % (time.time() - start_time))

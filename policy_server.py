@@ -165,42 +165,9 @@ DEFAULT_CONFIG["env_config"]["action_space"] = spaces.MultiDiscrete(
 
 ray.init(log_to_driver=False)
 
-# print(f"running on: {args.ip}:44444")
 
-# trainer = DDPPOTrainer(config=DEFAULT_CONFIG)
-
-# trainer = PPOTrainer(config=DEFAULT_CONFIG, env=RandomEnv)
 trainer = PPOTrainer
 
-# trainer = PPOTrainer(config=DEFAULT_CONFIG, env=UnderlordEnv)
-# trainer = APPOTrainer(config=DEFAULT_CONFIG, env=UnderlordEnv)
-
-# checkpoint_path = CHECKPOINT_FILE.format(args.run)
-
-
-# checkpoint_path = "checkpointsA/"
-
-# print(args.checkpoint)
-
-# if args.checkpoint:
-#    # Attempt to restore from checkpoint, if possible.
-#    if os.path.exists(args.checkpoint):
-#        print('path FOUND!')
-#        print("Restoring from checkpoint path", args.checkpoint)
-#        trainer.restore(args.checkpoint)
-#    else:
-#        print("That path does not exist!")
-
-## Serving and training loop.
-# i = 0
-# while True:
-
-#   print(pretty_print(trainer.train()))
-#   print(f"Finished train run #{i + 1}")
-#    i += 1
-#    if i % 1 == 0:
-#        checkpoint = trainer.save(checkpoint_path)
-#        print("Last checkpoint", checkpoint)
 
 from ray import tune
 
