@@ -11,12 +11,16 @@ import win32gui
 from matplotlib import pyplot as plt
 
 
-def loadDigits(itemName):
-    root = os.path.join(os.path.dirname(os.getcwd()), "digits", itemName)
+def loadDigits():
+    root = os.path.join(os.getcwd(), "digits")
+    print(os.getcwd())
+    print(root)
     digitsList = []
-    for i in range(len(os.listdir(root)) + 1):
-        if os.path.isfile(os.path.join(root, str(i) + ".jpg")):
-            img = cv2.imread(os.path.join(root, str(i) + ".jpg"))
+
+    for i in range(len(os.listdir(root))):
+        print(os.path.join(root, str(i) + ".png"))
+        if os.path.isfile(os.path.join(root, str(i) + ".png")):
+            img = cv2.imread(os.path.join(root, str(i) + ".png"))[:,:,1]
             digitsList.append((str(i), img))
     return digitsList
 
@@ -25,7 +29,7 @@ def countLife(img, templates):
                                   img,
                                   method=cv2.TM_CCOEFF_NORMED,
                                   N_object=float("inf"),
-                                  score_threshold=0.9,
+                                  score_threshold=0.7,
                                   maxOverlap=0,
                                   searchBox=None)
 
@@ -68,9 +72,11 @@ if 1 == 1:
             # print(full_screen)
             # print(full_screen.shape)
 
-    my_stock = full_screen[55:55+10, 548:548+10]
-    enemy_stock = full_screen[55:55+10, 587:587+10]
+    my_stock = full_screen[63:63+12, 547:547+10]
+    enemy_stock = full_screen[63:63+12, 585:585+10]
+    # print(my_stock[:,:,1])
 
-    plt.subplot(1, 1, 1), plt.imshow(my_stock, 'gray', vmin=0, vmax=255)
-    plt.show()
+
+    template = loadDigits()
+    print(countLife(my_stock[:,:,1],template))
 

@@ -1,3 +1,4 @@
+import MTM
 import numpy
 import ctypes
 import win32con
@@ -8,6 +9,21 @@ import time
 import mss
 from ctypes import windll
 import win32api
+import os
+import cv2
+
+def loadDigits():
+    root = os.path.join(os.getcwd(), "digits")
+    print(os.getcwd())
+    print(root)
+    digitsList = []
+
+    for i in range(len(os.listdir(root))):
+        print(os.path.join(root, str(i) + ".png"))
+        if os.path.isfile(os.path.join(root, str(i) + ".png")):
+            img = cv2.imread(os.path.join(root, str(i) + ".png"))[:,:,1]
+            digitsList.append((str(i), img))
+    return digitsList
 
 def imageGrab(x=0, y=0, w=0, h=0, grabber=None):
 
@@ -38,17 +54,27 @@ KEY_H = char2key('h')
 KEY_J = char2key('j')
 KEY_K = char2key('k')
 KEY_L = char2key('l')
-
 KEY_C = char2key('c')
 
 def keyHold(key):
-
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), 0, 0)
 
 def keyRelease(key):
-
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), win32con.KEYEVENTF_KEYUP, 0)
 
+def countLife(img, templates):
+    hits = MTM.matchTemplates(templates,
+                                  img,
+                                  method=cv2.TM_CCOEFF_NORMED,
+                                  N_object=float("inf"),
+                                  score_threshold=0.7,
+                                  maxOverlap=0,
+                                  searchBox=None)
+
+    if len(hits['TemplateName']) == 0:
+        return -1
+
+    return int(hits['TemplateName'].iloc[0])
 
 import numpy as np
 from gym import spaces
@@ -69,7 +95,7 @@ from ray.rllib.utils.typing import MultiAgentDict, EnvInfoDict, EnvObsType, EnvA
 class BrawlEnv(ExternalEnv):
 
     def __init__(self, config=None):
-
+        self.templates = loadDigits()
         threading.Thread.__init__(self)
 
         print(config)
@@ -153,7 +179,20 @@ class BrawlEnv(ExternalEnv):
 
     def getObservation(self):
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
-        full_screen_all = full_screen_all / 255
+
+        # Crop out stocks from full screen, format: top y cord, bot y cord, left x cord, right x cord
+        my_stock_img = full_screen_all[63:63 + 12, 547:547 + 10]
+        enemy_stock_img = full_screen_all[63:63 + 12, 585:585 + 10]
+
+        # Extract one channel green channel, screen capture goes BGR from stocks
+        my_stock_img = my_stock_img[:,:,1]
+        enemy_stock_img = enemy_stock_img[:,:,1]
+
+        my_stock = countLife(my_stock_img, self.templates)
+        enemy_stock_img = countLife(enemy_stock_img, self.templates)
+
+        full_screen_all = full_screen_all / 255.0
+
         return full_screen_all
 
     def act(self, actions):
