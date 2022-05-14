@@ -26,9 +26,9 @@ def findOffset(image):
                               searchBox=None)
 
     if len(hits['TemplateName']) == 0:
-        return -1
+        print("Gear Icon Used for Template not found")
+        sys.exit()
 
-    print(hits)
     return hits['BBox'].iloc[0]
 
 

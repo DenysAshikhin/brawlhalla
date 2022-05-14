@@ -12,6 +12,9 @@ import win32api
 import os
 import cv2
 
+gearX = 211
+gearY = 67
+
 def loadDigits():
     root = os.path.join(os.getcwd(), "digits")
     print(os.getcwd())
@@ -75,6 +78,26 @@ def countLife(img, templates):
         return -1
 
     return int(hits['TemplateName'].iloc[0])
+
+def findOffset(image):
+    root = os.path.join(os.getcwd(), "offsetGear.png")
+    offsetTemplate = cv2.imread(root)
+    offsetTemplate = offsetTemplate[:,:,1]
+
+    searchImage = image[0:100, 400:640, 1]
+    hits = MTM.matchTemplates([("Offset", offsetTemplate)],
+                              searchImage,
+                              method=cv2.TM_CCOEFF_NORMED,
+                              N_object=float("inf"),
+                              score_threshold=0.8,
+                              maxOverlap=0,
+                              searchBox=None)
+
+    if len(hits['TemplateName']) == 0:
+        print("Gear Icon Used for Template not found")
+        sys.exit()
+
+    return hits['BBox'].iloc[0]
 
 import numpy as np
 from gym import spaces
@@ -160,7 +183,15 @@ class BrawlEnv(ExternalEnv):
         self.currentStock = 3
         self.enemyStock = 3
 
+        full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
+        offSet = findOffset(imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3])
+        self.xOffset = gearX - offset[0]
+        self.yOffset = gearY - offset[1]
 
+        self.myStockX = 547 + self.xOffset
+        self.enemyStockX = 585 + self.xOffset
+
+        self.stockY = 63 + self.yOffset
 
         print('got past main loop')
 
@@ -180,14 +211,12 @@ class BrawlEnv(ExternalEnv):
             time.sleep(0.5)
 
 
-
-
     def getObservation(self):
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
 
         # Crop out stocks from full screen, format: top y cord, bot y cord, left x cord, right x cord
-        my_stock_img = full_screen_all[63:63 + 12, 547:547 + 10]
-        enemy_stock_img = full_screen_all[63:63 + 12, 585:585 + 10]
+        my_stock_img = full_screen_all[self.stockY:self.stockY + 12, self.myStockX:self.myStockX + 10]
+        enemy_stock_img = full_screen_all[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
 
         # Extract one channel green channel, screen capture goes BGR from stocks
         my_stock_img = my_stock_img[:,:,1]
