@@ -96,17 +96,17 @@ while True:
 
 
     # average out to ~30actions a second
-    # counter = counter + 1
-    # endTime = time.time()
-    # if(endTime - startTime) > 1:
-    #     print(f"actions per second: {counter}")
-    #     startTime = time.time()
-    #     counter = 0
+    counter = counter + 1
+    endTime = time.time()
+    if(endTime - startTime) > 1:
+        print(f"actions per second: {counter}")
+        startTime = time.time()
+        counter = 0
 
     gameObservation, reward, gameOver = env.getObservation()
     # print(gameObservation)
     # print(env.observation_space.contains(gameObservation))
-    print(reward, gameOver)
+    # print(reward, gameOver)
 
     if not env.observation_space.contains(gameObservation):
         print(gameObservation)
@@ -143,7 +143,7 @@ while True:
             runningReward = 0
             reward = 0
             # need to call a reset of env here
-            finalObs, reward, gameOver = env.underlord.getObservation()
+            finalObs, reward, gameOver = env.getObservation()
 
             if not env.observation_space.contains(finalObs):
                 print(gameObservation)

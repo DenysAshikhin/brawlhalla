@@ -11,9 +11,11 @@ from ctypes import windll
 import win32api
 import os
 import cv2
+from matplotlib import pyplot as plt
 
 gearX = 211
 gearY = 67
+
 
 def loadDigits():
     root = os.path.join(os.getcwd(), "digits")
@@ -24,14 +26,15 @@ def loadDigits():
     for i in range(len(os.listdir(root))):
         print(os.path.join(root, str(i) + ".png"))
         if os.path.isfile(os.path.join(root, str(i) + ".png")):
-            img = cv2.imread(os.path.join(root, str(i) + ".png"))[:,:,1]
+            img = cv2.imread(os.path.join(root, str(i) + ".png"))[:, :, 1]
             digitsList.append((str(i), img))
     return digitsList
 
-def imageGrab(x=0, y=0, w=0, h=0, grabber=None):
 
+def imageGrab(x=0, y=0, w=0, h=0, grabber=None):
     image = numpy.array(grabber.grab({"top": y, "left": x, "width": w, "height": h}))
     return image
+
 
 def char2key(c):
     # https://msdn.microsoft.com/en-us/library/windows/desktop/ms646329(v=vs.85).aspx
@@ -46,6 +49,7 @@ def char2key(c):
 
     return vk_key
 
+
 KEY_W = char2key('w')
 KEY_A = char2key('a')
 KEY_S = char2key('s')
@@ -59,30 +63,34 @@ KEY_K = char2key('k')
 KEY_L = char2key('l')
 KEY_C = char2key('c')
 
+
 def keyHold(key):
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), 0, 0)
+
 
 def keyRelease(key):
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), win32con.KEYEVENTF_KEYUP, 0)
 
+
 def countLife(img, templates):
     hits = MTM.matchTemplates(templates,
-                                  img,
-                                  method=cv2.TM_CCOEFF_NORMED,
-                                  N_object=float("inf"),
-                                  score_threshold=0.7,
-                                  maxOverlap=0,
-                                  searchBox=None)
+                              img,
+                              method=cv2.TM_CCOEFF_NORMED,
+                              N_object=float("inf"),
+                              score_threshold=0.8,
+                              maxOverlap=0,
+                              searchBox=None)
 
     if len(hits['TemplateName']) == 0:
         return -1
 
     return int(hits['TemplateName'].iloc[0])
 
+
 def findOffset(image):
     root = os.path.join(os.getcwd(), "offsetGear.png")
     offsetTemplate = cv2.imread(root)
-    offsetTemplate = offsetTemplate[:,:,1]
+    offsetTemplate = offsetTemplate[:, :, 1]
 
     searchImage = image[0:100, 400:640, 1]
     hits = MTM.matchTemplates([("Offset", offsetTemplate)],
@@ -99,6 +107,7 @@ def findOffset(image):
 
     return hits['BBox'].iloc[0]
 
+
 import numpy as np
 from gym import spaces
 
@@ -109,7 +118,6 @@ from six.moves import queue
 import threading
 import time
 from typing import Union, Optional
-
 
 from ray.rllib.env import ExternalEnv, MultiAgentEnv, ExternalMultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict, EnvInfoDict, EnvObsType, EnvActionType
@@ -136,15 +144,15 @@ class BrawlEnv(ExternalEnv):
 
         self.action_space = spaces.MultiDiscrete(
             [
-                2, # W
-                2, # A
-                2, # S
-                2, # D
-                2, # Space
-                2, # H
-                2, # J
-                2, # K
-                2 # L
+                2,  # W
+                2,  # A
+                2,  # S
+                2,  # D
+                2,  # Space
+                2,  # H
+                2,  # J
+                2,  # K
+                2  # L
             ]
         )
         self._episodes = {}
@@ -185,13 +193,34 @@ class BrawlEnv(ExternalEnv):
 
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
         offSet = findOffset(imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3])
-        self.xOffset = gearX - offset[0]
-        self.yOffset = gearY - offset[1]
+
+        print(f"my x: {gearX} - my Y: {gearY}")
+        print(f"my offset: {offSet}")
+
+
+
+        if offSet[0] > gearX:
+            self.xOffset = offSet[0] - gearX
+        else:
+            self.xOffset = gearX - offSet[0]
+
+        if offSet[1] > gearY:
+            self.yOffset = gearY - offSet[1]
+        else:
+            self.yOffset = offSet[1] - gearY
+
+        self.yOffset *= 2
+        self.xOffset = 0
+
+        print(f"Final offsetX: {self.xOffset}")
+        print(f"Final offsetY: {self.yOffset}")
 
         self.myStockX = 547 + self.xOffset
         self.enemyStockX = 585 + self.xOffset
 
         self.stockY = 63 + self.yOffset
+
+        self.gameOver = False
 
         print('got past main loop')
 
@@ -210,6 +239,18 @@ class BrawlEnv(ExternalEnv):
             keyRelease(KEY_C)
             time.sleep(0.5)
 
+    def releaseAllKeys(self):
+        keyRelease(KEY_SPACE)
+        keyRelease(KEY_W)
+        keyRelease(KEY_A)
+        keyRelease(KEY_S)
+        keyRelease(KEY_D)
+        keyRelease(KEY_H)
+        keyRelease(KEY_J)
+        keyRelease(KEY_K)
+        keyRelease(KEY_L)
+        keyRelease(KEY_C)
+
 
     def getObservation(self):
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
@@ -219,38 +260,47 @@ class BrawlEnv(ExternalEnv):
         enemy_stock_img = full_screen_all[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
 
         # Extract one channel green channel, screen capture goes BGR from stocks
-        my_stock_img = my_stock_img[:,:,1]
-        enemy_stock_img = enemy_stock_img[:,:,1]
+        my_stock_img = my_stock_img[:, :, 1]
+        # plt.subplot(1, 1, 1), plt.imshow(my_stock_img, 'gray', vmin=0, vmax=255)
+        # plt.show()
+        enemy_stock_img = enemy_stock_img[:, :, 1]
+        # plt.subplot(1, 1, 1) jl, plt.imshow(enemy_stock_img, 'gray', vmin=0, vmax=255)
+        # plt.show()
 
         my_stock = countLife(my_stock_img, self.templates)
         enemy_stock = countLife(enemy_stock_img, self.templates)
 
-        print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
+        # print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
 
         reward = 0
 
         gameOver = False
 
-        if my_stock != self.currentStock:
-            reward -= 0.33
+        if my_stock != -1 and enemy_stock != -1:
 
-        if enemy_stock != self.enemyStock:
-            reward += 0.33
+            if my_stock != self.currentStock:
+                reward -= 0.33
+                my_stock = self.currentStock
 
 
-        if enemy_stock == 0:
-            gameOver = True
-            reward += 1
+            if enemy_stock != self.enemyStock:
+                reward += 0.33
+                self.enemyStock = enemy_stock
 
-        if my_stock == 0:
-            gameOver = True
-            reward -= 1
+        if self.gameOver == False:
+            if enemy_stock == 0:
+                self.gameOver = True
+                reward += 1
+                self.releaseAllKeys()
 
+            if my_stock == 0:
+                self.gameOver = True
+                reward -= 1
+                self.releaseAllKeys()
 
         full_screen_all = full_screen_all / 255.0
 
-        return (full_screen_all, reward,gameOver)
-
+        return (full_screen_all, reward, self.gameOver)
 
     def act(self, actions):
 
@@ -414,7 +464,6 @@ class BrawlEnv(ExternalEnv):
         self._finished.add(episode.episode_id)
         episode.done(observation)
 
-
     def _get(self, episode_id: str) -> "_ExternalEnvEpisode":
         """Get a started episode or raise an error."""
 
@@ -522,8 +571,6 @@ class _ExternalEnvEpisode:
         with self.results_avail_condition:
             self.data_queue.put_nowait(item)
             self.results_avail_condition.notify()
-
-
 
 #
 #
