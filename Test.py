@@ -11,6 +11,32 @@ import win32gui
 from matplotlib import pyplot as plt
 
 
+def findOffset(image):
+    root = os.path.join(os.getcwd(), "offsetGear.png")
+    offsetTemplate = cv2.imread(root)
+    offsetTemplate = offsetTemplate[:,:,1]
+
+    searchImage = image[0:100, 400:640, 1]
+    hits = MTM.matchTemplates([("Offset", offsetTemplate)],
+                              searchImage,
+                              method=cv2.TM_CCOEFF_NORMED,
+                              N_object=float("inf"),
+                              score_threshold=0.8,
+                              maxOverlap=0,
+                              searchBox=None)
+
+    if len(hits['TemplateName']) == 0:
+        return -1
+
+    print(hits)
+    return hits['BBox'].iloc[0]
+
+
+
+
+
+
+
 def loadDigits():
     root = os.path.join(os.getcwd(), "digits")
     print(os.getcwd())
@@ -29,7 +55,7 @@ def countLife(img, templates):
                                   img,
                                   method=cv2.TM_CCOEFF_NORMED,
                                   N_object=float("inf"),
-                                  score_threshold=0.7,
+                                  score_threshold=0.8,
                                   maxOverlap=0,
                                   searchBox=None)
 
@@ -72,11 +98,13 @@ if 1 == 1:
             # print(full_screen)
             # print(full_screen.shape)
 
-    my_stock = full_screen[63:63+12, 547:547+10]
-    enemy_stock = full_screen[63:63+12, 585:585+10]
-    # print(my_stock[:,:,1])
 
-
-    template = loadDigits()
-    print(countLife(my_stock[:,:,1],template))
+    print(findOffset(full_screen))
+    # my_stock = full_screen[63:63+12, 547:547+10]
+    # enemy_stock = full_screen[63:63+12, 585:585+10]
+    # # print(my_stock[:,:,1])
+    #
+    #
+    # template = loadDigits()
+    # print(countLife(my_stock[:,:,1],template))
 
