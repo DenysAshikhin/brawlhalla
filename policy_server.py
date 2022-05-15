@@ -150,7 +150,7 @@ x = 320
 y = 240
 
 DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Box(low=0, high=1,
-                                                               shape=(y, x, 3), dtype=np.float32)
+                                                               shape=(y, x, 1), dtype=np.float32)
 
 DEFAULT_CONFIG["env_config"]["action_space"] = spaces.MultiDiscrete(
     [
