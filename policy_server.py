@@ -80,7 +80,7 @@ DEFAULT_CONFIG = with_common_config({
         #   additional Dense layers.
         # - FullyConnectedNetworks will have this additional FCStack as well
         # (that's why it's empty by default).
-        "post_fcnet_hiddens": [28],
+        "post_fcnet_hiddens": [128, 128],
         "post_fcnet_activation": "relu",
     },
     # Coefficient of the entropy regularizer.
@@ -143,7 +143,7 @@ DEFAULT_CONFIG = with_common_config({
     "compress_observations": True,
     # Whether to fake GPUs (using CPUs).
     # Set this to True for debugging on non-GPU machines (set `num_gpus` > 0).
-    "_fake_gpus": True
+    "_fake_gpus": False
 })
 
 x = 320
