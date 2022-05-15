@@ -31,13 +31,13 @@ DEFAULT_CONFIG = with_common_config({
     # Target value for KL divergence.
     "kl_target": 0.02,
     # Size of batches collected from each worker.
-    "rollout_fragment_length": 16,
+    "rollout_fragment_length": 4,
     # Number of timesteps collected for each SGD round. This defines the size
     # of each SGD epoch.
-    "train_batch_size": 4096,
+    "train_batch_size": 2048,
     # Total SGD batch size across all devices for SGD. This defines the
     # minibatch size within each epoch.
-    "sgd_minibatch_size": 512,
+    "sgd_minibatch_size": 256,
     # Number of SGD iterations in each outer loop (i.e., number of epochs to
     # execute per train batch).
     "num_sgd_iter": 1,
@@ -150,7 +150,7 @@ x = 320
 y = 240
 
 DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Box(low=0, high=1,
-                                                               shape=(y, x, 1), dtype=np.float32)
+                                                               shape=(y, x), dtype=np.float32)
 
 DEFAULT_CONFIG["env_config"]["action_space"] = spaces.MultiDiscrete(
     [
