@@ -11,6 +11,7 @@ from ctypes import windll
 import win32api
 import os
 import cv2
+from PIL.Image import Image
 from matplotlib import pyplot as plt
 
 gearX = 211
@@ -130,6 +131,11 @@ x = 320
 y = 240
 
 
+def pil_frombytes(im):
+    """ Efficient Pillow version. """
+    return Image.frombytes('RGB', im.size, im.bgra, 'raw', 'BGRX').tobytes()
+
+
 class BrawlEnv(ExternalEnv):
 
     def __init__(self, config=None):
@@ -147,7 +153,7 @@ class BrawlEnv(ExternalEnv):
 
         self.daemon = True
 
-        self.observation_space = spaces.Box(low=0, high=1, shape=(y, x, 3), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(y, x, 1), dtype=np.float32)
 
         self.action_space = spaces.MultiDiscrete(
             [
@@ -315,9 +321,16 @@ class BrawlEnv(ExternalEnv):
                 reward -= 1
                 self.releaseAllKeys()
 
-        full_screen_all = full_screen_all / 255.0
+        grayScale = pil_frombytes(full_screen_all).convert('L')
+        print('grayscale')
+        print(grayScale)
+        grayScale = grayScale / 255.0
+        print('gray scale divided')
+        print(grayScale)
 
-        full_screen_all_resized = resize(full_screen_all, (y, x), preserve_range=True)
+
+        full_screen_all_resized = resize(grayScale, (y, x))
+        print('final')
         print(full_screen_all_resized.shape)
 
         return (full_screen_all_resized, reward, self.gameOver)
