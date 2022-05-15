@@ -123,6 +123,13 @@ from ray.rllib.env import ExternalEnv, MultiAgentEnv, ExternalMultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict, EnvInfoDict, EnvObsType, EnvActionType
 
 
+from skimage.transform import resize
+
+
+x = 320
+y = 240
+
+
 class BrawlEnv(ExternalEnv):
 
     def __init__(self, config=None):
@@ -140,7 +147,7 @@ class BrawlEnv(ExternalEnv):
 
         self.daemon = True
 
-        self.observation_space = spaces.Box(low=0, high=1, shape=(480, 640, 3), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(y, x, 3), dtype=np.float32)
 
         self.action_space = spaces.MultiDiscrete(
             [
@@ -310,7 +317,10 @@ class BrawlEnv(ExternalEnv):
 
         full_screen_all = full_screen_all / 255.0
 
-        return (full_screen_all, reward, self.gameOver)
+        full_screen_all_resized = resize(full_screen_all, (x, y), preserve_range=True)
+        print(full_screen_all_resized.shape)
+
+        return (full_screen_all_resized, reward, self.gameOver)
 
     def act(self, actions):
 

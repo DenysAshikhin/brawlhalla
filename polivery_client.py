@@ -92,7 +92,16 @@ endTime = time.time()
 env.restartRound()
 
 
+actionTimeOut = 0.2
+actionTime = time.time()
+
+
 while True:
+
+    if(time.time() - actionTime < actionTimeOut):
+        continue
+    
+    actionTime = time.time()
 
 
     # average out to ~30actions a second
@@ -157,8 +166,10 @@ while True:
 
             episode_id = client.start_episode(episode_id=None)
 
-            print("updating weights")
-            client.update_policy_weights()
+
+            if local=='local':
+                print("updating weights")
+                client.update_policy_weights()
             print("restarting round")
             env.restartRound()
 
