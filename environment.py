@@ -239,7 +239,7 @@ class BrawlEnv(ExternalEnv):
 
         self.enemyStock = 3
         self.currentStock = 3
-        self.releaseAllKeys()
+        self.gameOver = False
 
         for i in range(6):
             keyHold(KEY_C)
@@ -317,7 +317,7 @@ class BrawlEnv(ExternalEnv):
 
         full_screen_all = full_screen_all / 255.0
 
-        full_screen_all_resized = resize(full_screen_all, (x, y), preserve_range=True)
+        full_screen_all_resized = resize(full_screen_all, (y, x), preserve_range=True)
         print(full_screen_all_resized.shape)
 
         return (full_screen_all_resized, reward, self.gameOver)
