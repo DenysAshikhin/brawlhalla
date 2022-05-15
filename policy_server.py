@@ -31,7 +31,7 @@ DEFAULT_CONFIG = with_common_config({
     # Target value for KL divergence.
     "kl_target": 0.02,
     # Size of batches collected from each worker.
-    "rollout_fragment_length": 64,
+    "rollout_fragment_length": 16,
     # Number of timesteps collected for each SGD round. This defines the size
     # of each SGD epoch.
     "train_batch_size": 4096,
@@ -62,9 +62,9 @@ DEFAULT_CONFIG = with_common_config({
         # Use None for making RLlib try to find a default filter setup given the
         # observation space.
         "conv_filters": [
-            [16, [24, 32], [14, 18]],
-            [32, [6, 6], 4],
-            [256, [9, 9], 1],
+          [16, [12, 16], [7, 9]],
+        [32, [6, 6], 4],
+        [256, [9, 9], 1],
         ],
         # Activation function descriptor.
         # Supported values are: "tanh", "relu", "swish" (or "silu"),
