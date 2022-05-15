@@ -52,7 +52,7 @@ print(f"Going to update {local}-y  at {update} seconds interval")
 print('trying to launch policy client')
 print(f"http://{args.ip}:55556")
 
-#Setting update_interval to false, so it doesn't update in middle of games, will be manually updating it between games
+# Setting update_interval to false, so it doesn't update in middle of games, will be manually updating it between games
 client = PolicyClient(address=f"http://{args.ip}:55556", update_interval=False, inference_mode=local)
 # client = PolicyClient(address=f"http://{args.ip}:55556", update_interval=60, inference_mode=local)
 
@@ -83,31 +83,29 @@ update = True
 
 runningReward = 0
 
-
 counter = 0
+runningCounter = 0
 
 startTime = time.time()
 endTime = time.time()
 
 env.restartRound()
 
-
 actionTimeOut = 0.2
 actionTime = time.time()
 
-
 while True:
 
-    if(time.time() - actionTime < actionTimeOut):
-        continue
-    
-    actionTime = time.time()
+    # if(time.time() - actionTime < actionTimeOut):
+    # contwalinue
 
+    # actionTime = time.time()
 
     # average out to ~30actions a second
     counter = counter + 1
+    runningCounter = runningCounter + 1
     endTime = time.time()
-    if(endTime - startTime) > 1:
+    if (endTime - startTime) > 1:
         print(f"actions per second: {counter}")
         startTime = time.time()
         counter = 0
@@ -123,7 +121,6 @@ while True:
         print(env.underlord.heroAlliances)
         sys.exit()
 
-
     action = None
 
     action = client.get_action(episode_id=episode_id, observation=gameObservation)
@@ -135,43 +132,37 @@ while True:
     # print(f"running reward: {reward}")
     client.log_returns(episode_id=episode_id, reward=reward)
 
-
     # Updating the model after every game in case there is a new one
-
-
 
     if gameOver:
 
-            if reward <= -1:
+        if reward <= -1:
 
-                print( f"GAME OVER! WE Lost final reward: {runningReward}!")
+            print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")
 
-            else:
-                print(f"GAME OVER! WE Won final reward: {runningReward}!")
+        else:
+            print(f"GAME OVER! WE Won final reward: {runningReward}! Number of actions: {runningCounter}")
 
-            runningReward = 0
-            reward = 0
-            # need to call a reset of env here
-            finalObs, reward, gameOver = env.getObservation()
+        runningReward = 0
+        runningCounter = 0
+        reward = 0
+        # need to call a reset of env here
+        finalObs, reward, gameOver = env.getObservation()
 
-            if not env.observation_space.contains(finalObs):
-                print(gameObservation)
-                print("Not lined up 3")
-                sys.exit()
+        if not env.observation_space.contains(finalObs):
+            print(gameObservation)
+            print("Not lined up 3")
+            sys.exit()
 
+        client.end_episode(episode_id=episode_id, observation=finalObs)
 
-            client.end_episode(episode_id=episode_id, observation=finalObs)
+        episode_id = client.start_episode(episode_id=None)
 
-
-
-            episode_id = client.start_episode(episode_id=None)
-
-
-            if local=='local':
-                print("updating weights")
-                client.update_policy_weights()
-            print("restarting round")
-            env.restartRound()
+        if local == 'local':
+            print("updating weights")
+            client.update_policy_weights()
+        print("restarting round")
+        env.restartRound()
 
     # print('finished logging step')
 
@@ -181,6 +172,3 @@ while True:
 
     # print(
     #     f"Round: {gameObservation[5]} - Time Left: {gameObservation[12]} - Obs duration: {obs_time} - Act duration: {act_time} - Overall duration: {time.time() - start_time}")
-
-
-

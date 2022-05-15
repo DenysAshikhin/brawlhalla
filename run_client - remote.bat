@@ -1,2 +1,2 @@
-python polivery_client.py -ip 192.168.0.18 -local local
+python polivery_client.py -ip 192.168.0.18 -local remote
 pause

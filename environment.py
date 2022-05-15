@@ -123,9 +123,7 @@ from typing import Union, Optional
 from ray.rllib.env import ExternalEnv, MultiAgentEnv, ExternalMultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict, EnvInfoDict, EnvObsType, EnvActionType
 
-
 from skimage.transform import resize
-
 
 x = 320
 y = 240
@@ -148,7 +146,7 @@ class BrawlEnv(ExternalEnv):
 
         self.daemon = True
 
-        self.observation_space = spaces.Box(low=0, high=1, shape=(y, x), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(y, x, 1), dtype=np.float32)
 
         self.action_space = spaces.MultiDiscrete(
             [
@@ -205,8 +203,6 @@ class BrawlEnv(ExternalEnv):
         print(f"my x: {gearX} - my Y: {gearY}")
         print(f"my offset: {offSet}")
 
-
-
         if offSet[0] > gearX:
             self.xOffset = offSet[0] - gearX
         else:
@@ -232,6 +228,58 @@ class BrawlEnv(ExternalEnv):
 
         print('got past main loop')
 
+    def releaseAllKeys(self):
+
+        keyHold(KEY_SPACE)
+        time.sleep(0.01)
+        keyRelease(KEY_SPACE)
+
+        keyHold(KEY_W)
+        time.sleep(0.01)
+        keyRelease(KEY_W)
+
+        time.sleep(0.01)
+        keyHold(KEY_A)
+        time.sleep(0.01)
+        keyRelease(KEY_A)
+
+        time.sleep(0.01)
+        keyHold(KEY_S)
+        time.sleep(0.01)
+        keyRelease(KEY_S)
+
+        time.sleep(0.01)
+        keyHold(KEY_D)
+        time.sleep(0.01)
+        keyRelease(KEY_D)
+
+        time.sleep(0.01)
+        keyHold(KEY_H)
+        time.sleep(0.01)
+        keyRelease(KEY_H)
+
+        time.sleep(0.01)
+        keyHold(KEY_J)
+        time.sleep(0.01)
+        keyRelease(KEY_J)
+
+        time.sleep(0.01)
+        keyHold(KEY_K)
+        time.sleep(0.01)
+        keyRelease(KEY_K)
+
+        time.sleep(0.01)
+        keyHold(KEY_L)
+        time.sleep(0.01)
+        keyRelease(KEY_L)
+
+        time.sleep(0.01)
+        keyHold(KEY_C)
+        time.sleep(0.01)
+        keyRelease(KEY_C)
+
+
+
     def startInitialGame(self):
 
         return None
@@ -241,33 +289,14 @@ class BrawlEnv(ExternalEnv):
         self.enemyStock = 3
         self.currentStock = 3
         self.gameOver = False
+        self.releaseAllKeys()
 
-        for i in range(6):
+        for i in range(8):
             keyHold(KEY_C)
             time.sleep(0.1)
             keyRelease(KEY_C)
-            time.sleep(0.5)
-
-    def releaseAllKeys(self):
-        keyRelease(KEY_SPACE)
-        time.sleep(0.1)
-        keyRelease(KEY_W)
-        time.sleep(0.1)
-        keyRelease(KEY_A)
-        time.sleep(0.1)
-        keyRelease(KEY_S)
-        time.sleep(0.1)
-        keyRelease(KEY_D)
-        time.sleep(0.1)
-        keyRelease(KEY_H)
-        time.sleep(0.1)
-        keyRelease(KEY_J)
-        time.sleep(0.1)
-        keyRelease(KEY_K)
-        time.sleep(0.1)
-        keyRelease(KEY_L)
-        time.sleep(0.1)
-        keyRelease(KEY_C)
+            time.sleep(2)
+        print('finished reseting the game')
 
 
     def getObservation(self):
@@ -300,7 +329,6 @@ class BrawlEnv(ExternalEnv):
                 reward -= 0.33
                 self.currentStock = my_stock
 
-
             if enemy_stock != self.enemyStock:
                 reward += 0.33
                 self.enemyStock = enemy_stock
@@ -309,35 +337,20 @@ class BrawlEnv(ExternalEnv):
             if enemy_stock == 0:
                 self.gameOver = True
                 reward += 1
-                self.releaseAllKeys()
 
             if my_stock == 0:
                 self.gameOver = True
                 reward -= 1
-                self.releaseAllKeys()
 
         rgb_weights = [0.1140, 0.5870, 0.2989]
         grayscale_image = np.dot(full_screen_all[..., :3], rgb_weights)
         grayscale_image = grayscale_image / 255.0
         grayscale_image = resize(grayscale_image, (y, x))
 
+        grayscale_image=numpy.reshape(grayscale_image,grayscale_image.shape+(1,))
+
+
         return (grayscale_image, reward, self.gameOver)
-
-
-
-        # grayScale = pil_frombytes(full_screen_all).convert('L')
-        # print('grayscale')
-        # print(grayScale)
-        # grayScale = grayScale / 255.0
-        # print('gray scale divided')
-        # print(grayScale)
-        #
-        #
-        # full_screen_all_resized = resize(grayScale, (y, x))
-        # print('final')
-        # print(full_screen_all_resized.shape)
-
-        # return (full_screen_all_resized, reward, self.gameOver)
 
     def act(self, actions):
 

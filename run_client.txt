@@ -1,2 +1,0 @@
-python policy_client.py -ip localhost -local local
-pause
