@@ -198,6 +198,8 @@ class BrawlEnv(ExternalEnv):
         win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
                               win32con.SWP_SHOWWINDOW | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
+        win32gui.MoveWindow(hwnd,0,0,width,height,True)
+
         sct = mss.mss()
         time.sleep(1)
 
