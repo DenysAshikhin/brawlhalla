@@ -94,6 +94,10 @@ env.restartRound()
 actionTimeOut = 0.2
 actionTime = time.time()
 
+epochActions = 1024
+actionsUntilEpoch = 1024
+epochNum = 0
+
 while True:
 
     # if(time.time() - actionTime < actionTimeOut):
@@ -137,11 +141,20 @@ while True:
     if gameOver:
 
         if reward <= -1:
-
             print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")
 
         else:
             print(f"GAME OVER! WE Won final reward: {runningReward}! Number of actions: {runningCounter}")
+
+        actionsUntilEpoch = actionsUntilEpoch - runningCounter
+
+        if actionsUntilEpoch < 0:
+            epochNum = epochNum + 1
+
+        print(f"Actions until epoch: {actionsUntilEpoch}, current epoch: {epochNum}")
+
+        if actionsUntilEpoch < 0:
+            actionsUntilEpoch = epochActions
 
         runningReward = 0
         runningCounter = 0

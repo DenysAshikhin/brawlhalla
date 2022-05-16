@@ -27,7 +27,7 @@ def loadDigits():
     for i in range(len(os.listdir(root))):
         print(os.path.join(root, str(i) + ".png"))
         if os.path.isfile(os.path.join(root, str(i) + ".png")):
-            img = cv2.imread(os.path.join(root, str(i) + ".png"))[:, :, 1]
+            img = cv2.imread(os.path.join(root, str(i) + ".png"), cv2.IMREAD_GRAYSCALE)
             digitsList.append((str(i), img))
     return digitsList
 
@@ -78,14 +78,25 @@ def countLife(img, templates):
                               img,
                               method=cv2.TM_CCOEFF_NORMED,
                               N_object=float("inf"),
-                              score_threshold=0.8,
+                              score_threshold=0.6,
                               maxOverlap=0,
                               searchBox=None)
 
     if len(hits['TemplateName']) == 0:
         return -1
 
-    return int(hits['TemplateName'].iloc[0])
+    for index, row in hits.iterrows():
+        # Multiple templates to search are used, each with different threshold value. These
+        # values were determined by experimentation to give best false positive and false
+        # negative values
+        if row['TemplateName'] == "2" and row['Score'] >= 0.81:
+            return int(row['TemplateName'])
+        elif row['TemplateName'] != "0" and row['Score'] >= 0.89:
+            return int(row['TemplateName'])
+        elif row['TemplateName'] == "0" and row['Score'] >= 0.7:
+            return int(row['TemplateName'])
+
+    return -1
 
 
 def findOffset(image):
@@ -196,6 +207,7 @@ class BrawlEnv(ExternalEnv):
 
         self.currentStock = 3
         self.enemyStock = 3
+        self.actionsTaken = 0
 
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
         offSet = findOffset(imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3])
@@ -288,6 +300,7 @@ class BrawlEnv(ExternalEnv):
 
         self.enemyStock = 3
         self.currentStock = 3
+        self.actionsTaken = 0
         self.gameOver = False
         self.releaseAllKeys()
 
@@ -295,29 +308,38 @@ class BrawlEnv(ExternalEnv):
             keyHold(KEY_C)
             time.sleep(0.1)
             keyRelease(KEY_C)
-            time.sleep(2)
+            time.sleep(1.75)
         print('finished reseting the game')
 
 
     def getObservation(self):
+
+        rgb_weights = [0.1140, 0.5870, 0.2989]
+
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
 
-        # Crop out stocks from full screen, format: top y cord, bot y cord, left x cord, right x cord
-        my_stock_img = full_screen_all[self.stockY:self.stockY + 12, self.myStockX:self.myStockX + 10]
-        enemy_stock_img = full_screen_all[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
+        grayscale_image = np.int_(np.dot(full_screen_all[..., :3], rgb_weights))
 
-        # Extract one channel green channel, screen capture goes BGR from stocks
-        my_stock_img = my_stock_img[:, :, 1]
-        # plt.subplot(1, 1, 1), plt.imshow(my_stock_img, 'gray', vmin=0, vmax=255)
-        # plt.show()
-        enemy_stock_img = enemy_stock_img[:, :, 1]
-        # plt.subplot(1, 1, 1) jl, plt.imshow(enemy_stock_img, 'gray', vmin=0, vmax=255)
-        # plt.show()
+        # Crop out stocks from full screen, format: top y cord, bot y cord, left x cord, right x cord
+        my_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.myStockX:self.myStockX + 10]
+        enemy_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
+
+        # # Extract one channel green channel, screen capture goes BGR from stocks
+        # my_stock_img = my_stock_img
+        # # plt.subplot(1, 1, 1), plt.imshow(my_stock_img, 'gray', vmin=0, vmax=255)
+        # # plt.show()
+        # enemy_stock_img = enemy_stock_img
+        # # plt.subplot(1, 1, 1) jl, plt.imshow(enemy_stock_img, 'gray', vmin=0, vmax=255)
+        # # plt.show()
 
         my_stock = countLife(my_stock_img, self.templates)
         enemy_stock = countLife(enemy_stock_img, self.templates)
 
-        # print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
+        grayscale_image = grayscale_image / 255.0
+        grayscale_image = resize(grayscale_image, (y, x))
+        grayscale_image = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
+
+        print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
 
         reward = 0
 
@@ -325,11 +347,11 @@ class BrawlEnv(ExternalEnv):
 
         if my_stock != -1 and enemy_stock != -1:
 
-            if my_stock != self.currentStock:
+            if my_stock < self.currentStock:
                 reward -= 0.33
                 self.currentStock = my_stock
 
-            if enemy_stock != self.enemyStock:
+            if enemy_stock < self.enemyStock:
                 reward += 0.33
                 self.enemyStock = enemy_stock
 
@@ -342,12 +364,11 @@ class BrawlEnv(ExternalEnv):
                 self.gameOver = True
                 reward -= 1
 
-        rgb_weights = [0.1140, 0.5870, 0.2989]
-        grayscale_image = np.dot(full_screen_all[..., :3], rgb_weights)
-        grayscale_image = grayscale_image / 255.0
-        grayscale_image = resize(grayscale_image, (y, x))
+        if self.actionsTaken < 500:
+            reward += 0.003
+            self.actionsTaken = self.actionsTaken + 1
 
-        grayscale_image=numpy.reshape(grayscale_image,grayscale_image.shape+(1,))
+
 
 
         return (grayscale_image, reward, self.gameOver)
