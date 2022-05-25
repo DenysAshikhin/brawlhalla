@@ -91,7 +91,7 @@ endTime = time.time()
 
 env.restartRound()
 
-actionTimeOut = 0.15
+actionTimeOut = 0.2
 actionTime = time.time()
 
 epochActions = 4096

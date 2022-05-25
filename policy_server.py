@@ -72,11 +72,16 @@ DEFAULT_CONFIG = with_common_config({
             # [256, [9, 9], 1],
 
             #480 x 640
-            [4, [5, 5], [3, 3]],
-            [16, [5, 5], [3, 3]],
-            [32, [5, 5], [3, 3]],
-            [64, [5, 5], [3, 3]],
-            [256, [5, 5], [3, 4]],
+            # [4, [5, 5], [3, 3]],
+            # [16, [5, 5], [3, 3]],
+            # [32, [5, 5], [3, 3]],
+            # [64, [5, 5], [3, 3]],
+            # [256, [5, 5], [3, 4]],
+
+            # 240 X 320
+            [64, [12, 16], [7, 9]],
+            [128, [6, 6], 4],
+            [256, [9, 9], 1]
         ],
         # A,
         # Activation function descriptor.
@@ -159,11 +164,11 @@ DEFAULT_CONFIG = with_common_config({
     "_fake_gpus": False
 })
 
-# x = 320
-# y = 240
+x = 320
+y = 240
 
-x = 640
-y = 480
+# x = 640
+# y = 480
 
 DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Box(low=0, high=1, shape=(y, x, 1), dtype=np.float32)
 
@@ -191,7 +196,7 @@ from ray import tune
 name = "" + args.checkpoint
 print(f"Starting: {name}")
 tune.run(trainer,
-         resume = True,
+         resume = 'AUTO',
          config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
          max_failures=1,
          # restore="C:\\Users\\ashyk\\ray_results\\TEST_32k-batch_512-len_32_Run-2\\PPO_RandomEnv_46610_00000_0_2021-12-31_17-30-37\\checkpoint_000027\\checkpoint-27",
