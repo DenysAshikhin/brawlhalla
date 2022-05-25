@@ -136,10 +136,10 @@ from ray.rllib.utils.typing import MultiAgentDict, EnvInfoDict, EnvObsType, EnvA
 
 from skimage.transform import resize
 
-# x = 320
-# y = 240
-x = 640
-y = 480
+x = 320
+y = 240
+# x = 640
+# y = 480
 
 class BrawlEnv(ExternalEnv):
 
@@ -339,9 +339,9 @@ class BrawlEnv(ExternalEnv):
 
         grayscale_image = grayscale_image / 255.0
         grayscale_image = resize(grayscale_image, (y, x))
-        print(grayscale_image.shape)
+        # print(grayscale_image.shape)
         grayscale_image = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
-        print(grayscale_image.shape)
+        # print(grayscale_image.shape)
         print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
 
         reward = 0
@@ -385,7 +385,7 @@ class BrawlEnv(ExternalEnv):
                 reward -= 1
                 reward -= 0.33 * self.enemyStock
 
-        modifier = 1.5
+        modifier = 1
 
         if self.actionsTaken < (500 * modifier):
             reward += (0.003 / modifier)
