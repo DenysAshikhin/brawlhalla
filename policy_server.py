@@ -31,13 +31,13 @@ DEFAULT_CONFIG = with_common_config({
     # Target value for KL divergence.
     "kl_target": 0.02,
     # Size of batches collected from each worker.
-    "rollout_fragment_length": 4,
+    "rollout_fragment_length": 16,
     # Number of timesteps collected for each SGD round. This defines the size
     # of each SGD epoch.
-    "train_batch_size": 2048,
+    "train_batch_size": 4096,
     # Total SGD batch size across all devices for SGD. This defines the
     # minibatch size within each epoch.
-    "sgd_minibatch_size": 256,
+    "sgd_minibatch_size": 128,
     # Number of SGD iterations in each outer loop (i.e., number of epochs to
     # execute per train batch).
     "num_sgd_iter": 1,
@@ -54,7 +54,10 @@ DEFAULT_CONFIG = with_common_config({
         # Share layers for value function. If you set this to True, it's
         # important to tune vf_loss_coeff.
         "vf_share_layers": False,
-
+        "use_lstm": True,
+        "max_seq_len": 32,
+        "lstm_cell_size": 128,
+        "lstm_use_prev_action": True,
         # VisionNetwork (tf and torch): rllib.models.tf|torch.visionnet.py
         # These are used if no custom model is specified and the input space is 2D.
         # Filter config: List of [out_channels, kernel, stride] for each filter.
@@ -62,10 +65,20 @@ DEFAULT_CONFIG = with_common_config({
         # Use None for making RLlib try to find a default filter setup given the
         # observation space.
         "conv_filters": [
-          [16, [12, 16], [7, 9]],
-        [32, [6, 6], 4],
-        [256, [9, 9], 1],
+            # [4, [3, 4], [1, 1]],
+            # [16, [6, 8], [3, 3]],
+            # [32, [6, 8], [3, 4]],
+            # [64, [6, 6], 3],
+            # [256, [9, 9], 1],
+
+            #480 x 640
+            [4, [5, 5], [3, 3]],
+            [16, [5, 5], [3, 3]],
+            [32, [5, 5], [3, 3]],
+            [64, [5, 5], [3, 3]],
+            [256, [5, 5], [3, 4]],
         ],
+        # A,
         # Activation function descriptor.
         # Supported values are: "tanh", "relu", "swish" (or "silu"),
         # "linear" (or None).
@@ -80,7 +93,7 @@ DEFAULT_CONFIG = with_common_config({
         #   additional Dense layers.
         # - FullyConnectedNetworks will have this additional FCStack as well
         # (that's why it's empty by default).
-        "post_fcnet_hiddens": [128, 128],
+        "post_fcnet_hiddens": [256, 256],
         "post_fcnet_activation": "relu",
     },
     # Coefficient of the entropy regularizer.
@@ -91,7 +104,7 @@ DEFAULT_CONFIG = with_common_config({
     "clip_param": 0.2,
     # Clip param for the value function. Note that this is sensitive to the
     # scale of the rewards. If your expected V is large, increase this.
-    "vf_clip_param": 30.0,
+    "vf_clip_param": 2.0,
     # If specified, clip the global norm of gradients by this amount.
     "grad_clip": None,
     # Whether to rollout "complete_episodes" or "truncate_episodes".
@@ -103,7 +116,7 @@ DEFAULT_CONFIG = with_common_config({
     # # the default optimizer.
     "simple_optimizer": True,
     # "reuse_actors": True,
-    "num_gpus": 1,
+    "num_gpus": 0,
     # Use the connector server to generate experiences.
     "input": (
         lambda ioctx: PolicyServerInput(ioctx, args.ip, 55556)
@@ -146,11 +159,13 @@ DEFAULT_CONFIG = with_common_config({
     "_fake_gpus": False
 })
 
-x = 320
-y = 240
+# x = 320
+# y = 240
 
-DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Box(low=0, high=1,
-                                                               shape=(y, x, 1), dtype=np.float32)
+x = 640
+y = 480
+
+DEFAULT_CONFIG["env_config"]["observation_space"] = spaces.Box(low=0, high=1, shape=(y, x, 1), dtype=np.float32)
 
 DEFAULT_CONFIG["env_config"]["action_space"] = spaces.MultiDiscrete(
     [
@@ -166,18 +181,17 @@ DEFAULT_CONFIG["env_config"]["action_space"] = spaces.MultiDiscrete(
     ]
 )
 
-ray.init(log_to_driver=False)
-
+# ray.init(log_to_driver=False)
+ray.init(num_cpus=5, num_gpus=0, log_to_driver=False)
 
 trainer = PPOTrainer
-
 
 from ray import tune
 
 name = "" + args.checkpoint
 print(f"Starting: {name}")
 tune.run(trainer,
-         # resume = True,
+         resume = True,
          config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
          max_failures=1,
          # restore="C:\\Users\\ashyk\\ray_results\\TEST_32k-batch_512-len_32_Run-2\\PPO_RandomEnv_46610_00000_0_2021-12-31_17-30-37\\checkpoint_000027\\checkpoint-27",

@@ -93,7 +93,7 @@ def countLife(img, templates):
             return int(row['TemplateName'])
         elif row['TemplateName'] != "0" and row['Score'] >= 0.89:
             return int(row['TemplateName'])
-        elif row['TemplateName'] == "0" and row['Score'] >= 0.7:
+        elif row['TemplateName'] == "0" and row['Score'] >= 0.65:
             return int(row['TemplateName'])
 
     return -1
@@ -136,9 +136,10 @@ from ray.rllib.utils.typing import MultiAgentDict, EnvInfoDict, EnvObsType, EnvA
 
 from skimage.transform import resize
 
-x = 320
-y = 240
-
+# x = 320
+# y = 240
+x = 640
+y = 480
 
 class BrawlEnv(ExternalEnv):
 
@@ -198,7 +199,7 @@ class BrawlEnv(ExternalEnv):
         win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
                               win32con.SWP_SHOWWINDOW | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
-        win32gui.MoveWindow(hwnd,0,0,width,height,True)
+        win32gui.MoveWindow(hwnd, 0, 0, width, height, True)
 
         sct = mss.mss()
         time.sleep(1)
@@ -210,6 +211,7 @@ class BrawlEnv(ExternalEnv):
         self.currentStock = 3
         self.enemyStock = 3
         self.actionsTaken = 0
+        self.failedStocks = 0
 
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
         offSet = findOffset(imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3])
@@ -292,8 +294,6 @@ class BrawlEnv(ExternalEnv):
         time.sleep(0.01)
         keyRelease(KEY_C)
 
-
-
     def startInitialGame(self):
 
         return None
@@ -304,6 +304,7 @@ class BrawlEnv(ExternalEnv):
         self.currentStock = 3
         self.actionsTaken = 0
         self.gameOver = False
+        self.failedStocks = 0
         self.releaseAllKeys()
 
         for i in range(8):
@@ -312,7 +313,6 @@ class BrawlEnv(ExternalEnv):
             keyRelease(KEY_C)
             time.sleep(1.75)
         print('finished reseting the game')
-
 
     def getObservation(self):
 
@@ -339,13 +339,15 @@ class BrawlEnv(ExternalEnv):
 
         grayscale_image = grayscale_image / 255.0
         grayscale_image = resize(grayscale_image, (y, x))
+        print(grayscale_image.shape)
         grayscale_image = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
-
+        print(grayscale_image.shape)
         print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
 
         reward = 0
 
         gameOver = False
+        forceEnd = False
 
         if my_stock != -1 and enemy_stock != -1:
 
@@ -357,6 +359,12 @@ class BrawlEnv(ExternalEnv):
                 reward += 0.33
                 self.enemyStock = enemy_stock
 
+            self.failedStocks = 0
+        elif my_stock == -1 and enemy_stock == -1:
+            forceEnd = True
+        else:
+            self.failedStocks = self.failedStocks + 1
+
         if self.gameOver == False:
             if enemy_stock == 0:
                 self.gameOver = True
@@ -366,12 +374,22 @@ class BrawlEnv(ExternalEnv):
                 self.gameOver = True
                 reward -= 1
 
-        if self.actionsTaken < 500:
-            reward += 0.003
+        # Emergency breaker to just kill the game
+        elif self.failedStocks > 13 or forceEnd == True:
+            self.gameOver = True
+
+            if self.enemyStock < self.currentStock:
+                reward += 1
+                reward += 0.33 * self.enemyStock
+            elif self.currentStock < self.enemyStock:
+                reward -= 1
+                reward -= 0.33 * self.enemyStock
+
+        modifier = 1.5
+
+        if self.actionsTaken < (500 * modifier):
+            reward += (0.003 / modifier)
             self.actionsTaken = self.actionsTaken + 1
-
-
-
 
         return (grayscale_image, reward, self.gameOver)
 

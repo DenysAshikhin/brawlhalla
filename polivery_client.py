@@ -66,7 +66,7 @@ print('trying to get initial eid')
 episode_id = client.start_episode()
 
 # if local == 'remote':
-#     env.underlord.startNewGame()
+#     env.underlord.startNewGame()c
 
 # gameObservation = env.underlord.getObservation()
 reward = 0
@@ -91,19 +91,22 @@ endTime = time.time()
 
 env.restartRound()
 
-actionTimeOut = 0.2
+actionTimeOut = 0.15
 actionTime = time.time()
 
-epochActions = 1024
-actionsUntilEpoch = 1024
+epochActions = 4096
+actionsUntilEpoch = 4096
 epochNum = 0
 
 while True:
 
-    # if(time.time() - actionTime < actionTimeOut):
-    # contwalinue
+    elapsed_time = time.time() - actionTime
+    if elapsed_time < actionTimeOut:
+        continue
 
-    # actionTime = time.time()
+
+
+    actionTime = time.time()
 
     # average out to ~30actions a second
     counter = counter + 1
@@ -138,7 +141,10 @@ while True:
 
     # Updating the model after every game in case there is a new one
 
-    if gameOver:
+    if gameOver or elapsed_time > 20:
+
+        if elapsed_time > 20:
+            print("restarting due to elapsed time")
 
         if reward <= -1:
             print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")
