@@ -72,16 +72,16 @@ DEFAULT_CONFIG = with_common_config({
             # [256, [9, 9], 1],
 
             #480 x 640
-            # [4, [5, 5], [3, 3]],
-            # [16, [5, 5], [3, 3]],
-            # [32, [5, 5], [3, 3]],
-            # [64, [5, 5], [3, 3]],
-            # [256, [5, 5], [3, 4]],
+            [4, [7, 7], [3, 3]],
+            [16, [5, 5], [3, 3]],
+            [32, [5, 5], [2, 2]],
+            [64, [5, 5], [2, 2]],
+            [256, [5, 5], [3, 5]],
 
             # 240 X 320
-            [64, [12, 16], [7, 9]],
-            [128, [6, 6], 4],
-            [256, [9, 9], 1]
+            # [64, [12, 16], [7, 9]],
+            # [128, [6, 6], 4],
+            # [256, [9, 9], 1]
         ],
         # A,
         # Activation function descriptor.
@@ -198,6 +198,6 @@ print(f"Starting: {name}")
 tune.run(trainer,
          resume = 'AUTO',
          config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
-         max_failures=1,
-         # restore="C:\\Users\\ashyk\\ray_results\\TEST_32k-batch_512-len_32_Run-2\\PPO_RandomEnv_46610_00000_0_2021-12-31_17-30-37\\checkpoint_000027\\checkpoint-27",
+         max_failures=99,
+         # restore="C:\\Users\\denys\\ray_results\\mediumbrawl1\\PPOTrainer_RandomEnv_6950c_00000_0_2022-05-27_08-06-17\\checkpoint_000071\\checkpoint-71",
          checkpoint_freq=1, checkpoint_at_end=True)
