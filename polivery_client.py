@@ -200,9 +200,10 @@ while True:
         if local == 'local':
             print("updating weights")
             client.update_policy_weights()
-        print("restarting round")
-        env.restartRound()
-        print('round restarted')
+        # print("restarting round")
+        # env.restartRound()
+        # print('round restarted')
+        needReset = True
 
     # print('finished logging step')
 
