@@ -143,11 +143,12 @@ while True:
         reward = 0
         gameOver = False
         print('resetFinished!')
+    else:
+        env.act(action)
+        # print('took action')
 
+    # print('got action')
 
-    print('got action')
-    env.act(action)
-    print('took action')
 
     runningReward += reward
     # act_time = time.time() - act_time
@@ -155,7 +156,7 @@ while True:
     # print(f"running reward: {reward}")
 
     client.log_returns(episode_id=episode_id, reward=reward)
-    print('logged returns')
+    # print('logged returns')
     # Updating the model after every game in case there is a new one
 
     if gameOver:
@@ -203,6 +204,8 @@ while True:
         print("restarting round")
         env.restartRound()
         print('round restarted')
+
+        needReset = True
 
     # print('finished logging step')
 

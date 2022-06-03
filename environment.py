@@ -246,51 +246,51 @@ class BrawlEnv(ExternalEnv):
 
     def releaseAllKeys(self):
 
-        keyHold(KEY_SPACE)
+        # keyHold(KEY_SPACE)
         time.sleep(0.01)
         keyRelease(KEY_SPACE)
 
-        keyHold(KEY_W)
+        # keyHold(KEY_W)
         time.sleep(0.01)
         keyRelease(KEY_W)
 
-        time.sleep(0.01)
-        keyHold(KEY_A)
+        # time.sleep(0.01)
+        # keyHold(KEY_A)
         time.sleep(0.01)
         keyRelease(KEY_A)
 
-        time.sleep(0.01)
-        keyHold(KEY_S)
+        # time.sleep(0.01)
+        # keyHold(KEY_S)
         time.sleep(0.01)
         keyRelease(KEY_S)
 
-        time.sleep(0.01)
-        keyHold(KEY_D)
+        # time.sleep(0.01)
+        # keyHold(KEY_D)
         time.sleep(0.01)
         keyRelease(KEY_D)
 
-        time.sleep(0.01)
-        keyHold(KEY_H)
+        # time.sleep(0.01)
+        # keyHold(KEY_H)
         time.sleep(0.01)
         keyRelease(KEY_H)
 
-        time.sleep(0.01)
-        keyHold(KEY_J)
+        # time.sleep(0.01)
+        # keyHold(KEY_J)
         time.sleep(0.01)
         keyRelease(KEY_J)
 
-        time.sleep(0.01)
-        keyHold(KEY_K)
+        # time.sleep(0.01)
+        # keyHold(KEY_K)
         time.sleep(0.01)
         keyRelease(KEY_K)
 
-        time.sleep(0.01)
-        keyHold(KEY_L)
+        # time.sleep(0.01)
+        # keyHold(KEY_L)
         time.sleep(0.01)
         keyRelease(KEY_L)
 
-        time.sleep(0.01)
-        keyHold(KEY_C)
+        # time.sleep(0.01)
+        # keyHold(KEY_C)
         time.sleep(0.01)
         keyRelease(KEY_C)
 
