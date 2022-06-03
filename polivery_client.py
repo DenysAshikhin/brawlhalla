@@ -102,6 +102,9 @@ needReset = False
 
 while True:
 
+    if needReset:
+        env.releaseAllKeys()
+
     elapsed_time = time.time() - actionTime
     if elapsed_time < actionTimeOut:
         continue
@@ -204,8 +207,6 @@ while True:
         # print("restarting round")
         # env.restartRound()
         # print('round restarted')
-        needReset = True
-
         needReset = True
 
     # print('finished logging step')
