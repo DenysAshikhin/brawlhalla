@@ -120,7 +120,7 @@ while True:
         counter = 0
 
     gameObservation, reward, gameOver = env.getObservation()
-    print('got observation')
+    # print('got observation')
     # print(gameObservation)
     # print(env.observation_space.contains(gameObservation))
     # print(reward, gameOver)
@@ -145,9 +145,9 @@ while True:
         print('resetFinished!')
 
 
-    print('got action')
+    # print('got action')
     env.act(action)
-    print('took action')
+    # print('took action')
 
     runningReward += reward
     # act_time = time.time() - act_time
@@ -155,7 +155,7 @@ while True:
     # print(f"running reward: {reward}")
 
     client.log_returns(episode_id=episode_id, reward=reward)
-    print('logged returns')
+    # print('logged returns')
     # Updating the model after every game in case there is a new one
 
     if gameOver:
@@ -193,9 +193,9 @@ while True:
             sys.exit()
 
         client.end_episode(episode_id=episode_id, observation=finalObs)
-        print('ended episode')
+        # print('ended episode')
         episode_id = client.start_episode(episode_id=None)
-        print('started new episode')
+        # print('started new episode')
 
         if local == 'local':
             print("updating weights")
