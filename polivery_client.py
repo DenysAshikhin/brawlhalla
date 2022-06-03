@@ -120,7 +120,7 @@ while True:
         counter = 0
 
     gameObservation, reward, gameOver = env.getObservation()
-    print('got observation')
+    # print('got observation')
     # print(gameObservation)
     # print(env.observation_space.contains(gameObservation))
     # print(reward, gameOver)
@@ -194,16 +194,17 @@ while True:
             sys.exit()
 
         client.end_episode(episode_id=episode_id, observation=finalObs)
-        print('ended episode')
+        # print('ended episode')
         episode_id = client.start_episode(episode_id=None)
-        print('started new episode')
+        # print('started new episode')
 
         if local == 'local':
             print("updating weights")
             client.update_policy_weights()
-        print("restarting round")
-        env.restartRound()
-        print('round restarted')
+        # print("restarting round")
+        # env.restartRound()
+        # print('round restarted')
+        needReset = True
 
         needReset = True
 
