@@ -98,6 +98,8 @@ epochActions = 4096
 actionsUntilEpoch = 4096
 epochNum = 0
 
+needReset = False
+
 while True:
 
     elapsed_time = time.time() - actionTime
@@ -132,6 +134,16 @@ while True:
     action = None
 
     action = client.get_action(episode_id=episode_id, observation=gameObservation)
+
+    if needReset:
+        print('starting reset!')
+        env.restartRound()
+        needReset = False
+        reward = 0
+        gameOver = False
+        print('resetFinished!')
+
+
     print('got action')
     env.act(action)
     print('took action')
@@ -145,10 +157,10 @@ while True:
     print('logged returns')
     # Updating the model after every game in case there is a new one
 
-    if gameOver or elapsed_time > 20:
+    if gameOver:
 
-        if elapsed_time > 20:
-            print("restarting due to elapsed time")
+        # if elapsed_time > 20:
+        #     print("restarting due to elapsed time")
 
         if reward <= -1:
             print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")

@@ -298,20 +298,27 @@ class BrawlEnv(ExternalEnv):
 
         return None
 
-    def restartRound(self):
 
+    def resetValues(self):
         self.enemyStock = 3
         self.currentStock = 3
         self.actionsTaken = 0
         self.gameOver = False
         self.failedStocks = 0
-        self.releaseAllKeys()
+
+    def restartMatch(self):
 
         for i in range(8):
             keyHold(KEY_C)
             time.sleep(0.1)
             keyRelease(KEY_C)
             time.sleep(1.75)
+
+    def restartRound(self):
+
+        self.resetValues()
+        self.restartMatch()
+
         print('finished reseting the game')
 
     def getObservation(self):
