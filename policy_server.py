@@ -49,15 +49,29 @@ DEFAULT_CONFIG = with_common_config({
     "lr_schedule": None,
     # Coefficient of the value function loss. IMPORTANT: you must tune this if
     # you set vf_share_layers=True inside your model's config.
-    "vf_loss_coeff": 1.0,
+    "vf_loss_coeff": 0.1,
     "model": {
         # Share layers for value function. If you set this to True, it's
         # important to tune vf_loss_coeff.
-        "vf_share_layers": False,
-        "use_lstm": True,
-        "max_seq_len": 32,
-        "lstm_cell_size": 128,
-        "lstm_use_prev_action": True,
+        "vf_share_layers": True,
+
+        # "use_lstm": True,
+        # "max_seq_len": 32,
+        # "lstm_cell_size": 128,
+        # "lstm_use_prev_action": True,
+
+        'use_attention': True,
+        "max_seq_len": 30,
+        "attention_num_transformer_units": 2,
+        "attention_dim": 256,
+        "attention_memory_inference": 100,
+        "attention_memory_training": 50,
+        "attention_num_heads": 8,
+        "attention_head_dim": 32,
+        "attention_position_wise_mlp_dim": 128,
+        "attention_use_n_prev_actions": 0,
+        "attention_use_n_prev_rewards": 0,
+        "attention_init_gru_gate_bias": 2.0,
         # VisionNetwork (tf and torch): rllib.models.tf|torch.visionnet.py
         # These are used if no custom model is specified and the input space is 2D.
         # Filter config: List of [out_channels, kernel, stride] for each filter.
@@ -72,11 +86,11 @@ DEFAULT_CONFIG = with_common_config({
             # [256, [9, 9], 1],
 
             #480 x 640
-            [4, [7, 7], [3, 3]],
-            [16, [5, 5], [3, 3]],
-            [32, [5, 5], [2, 2]],
-            [64, [5, 5], [2, 2]],
-            [256, [5, 5], [3, 5]],
+            # [4, [7, 7], [3, 3]],
+            # [16, [5, 5], [3, 3]],
+            # [32, [5, 5], [2, 2]],
+            # [64, [5, 5], [2, 2]],
+            # [256, [5, 5], [3, 5]],
 
             # 240 X 320
             # [64, [12, 16], [7, 9]],
@@ -87,7 +101,7 @@ DEFAULT_CONFIG = with_common_config({
         # Activation function descriptor.
         # Supported values are: "tanh", "relu", "swish" (or "silu"),
         # "linear" (or None).
-        "conv_activation": "relu",
+        # "conv_activation": "relu",
 
         # Some default models support a final FC stack of n Dense layers with given
         # activation:
@@ -98,8 +112,8 @@ DEFAULT_CONFIG = with_common_config({
         #   additional Dense layers.
         # - FullyConnectedNetworks will have this additional FCStack as well
         # (that's why it's empty by default).
-        "post_fcnet_hiddens": [256, 256],
-        "post_fcnet_activation": "relu",
+        # "post_fcnet_hiddens": [256, 256],
+        # "post_fcnet_activation": "relu",
     },
     # Coefficient of the entropy regularizer.
     "entropy_coeff": 0.00005,
@@ -196,8 +210,8 @@ from ray import tune
 name = "" + args.checkpoint
 print(f"Starting: {name}")
 tune.run(trainer,
-         resume = 'AUTO',
+         resume = False,
          config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
          max_failures=99,
-         # restore="C:\\Users\\denys\\ray_results\\mediumbrawl1\\PPOTrainer_RandomEnv_6950c_00000_0_2022-05-27_08-06-17\\checkpoint_000071\\checkpoint-71",
+         # restore="C:\\Users\\denys\\ray_results\\mediumbrawl1-v3\\PPOTrainer_RandomEnv_8acb7_00000_0_2022-05-28_20-16-11\\checkpoint_000058\\checkpoint-58",
          checkpoint_freq=1, checkpoint_at_end=True)
