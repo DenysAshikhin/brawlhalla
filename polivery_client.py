@@ -137,6 +137,7 @@ while True:
 
     if needReset:
         print('starting reset!')
+        env.releaseAllKeys()
         env.restartRound()
         needReset = False
         reward = 0
@@ -161,6 +162,8 @@ while True:
 
         # if elapsed_time > 20:
         #     print("restarting due to elapsed time")
+
+        env.releaseAllKeys()
 
         if reward <= -1:
             print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")

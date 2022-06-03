@@ -316,6 +316,7 @@ class BrawlEnv(ExternalEnv):
 
     def restartRound(self):
 
+        self.releaseAllKeys()
         self.resetValues()
         self.restartMatch()
 
