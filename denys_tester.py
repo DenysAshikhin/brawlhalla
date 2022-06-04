@@ -1,3 +1,5 @@
+import time
+
 import numpy
 import numpy as np
 from matplotlib import pyplot as plt
@@ -6,17 +8,17 @@ import cv2 as cv
 from gym import spaces
 
 
-x = 4
-y = 2
-spacy = spaces.Box(low=0, high=1, shape=(y, x), dtype=np.float32)
-
-print(spacy)
-
-testy = numpy.array([[0.5,0.5,0.5,0.5],
-                     [0.554534643,0.5,0.5,0.5]])
-print(testy)
-
-print(spacy.contains(testy))
+# x = 4
+# y = 2
+# spacy = spaces.Box(low=0, high=1, shape=(y, x), dtype=np.float32)
+#
+# print(spacy)
+#
+# testy = numpy.array([[0.5,0.5,0.5,0.5],
+#                      [0.554534643,0.5,0.5,0.5]])
+# print(testy)
+#
+# print(spacy.contains(testy))
 
 
 # env = BrawlEnv()
@@ -44,3 +46,27 @@ print(spacy.contains(testy))
 #
 #
 # cv.imwrite('mss.png', obs)
+
+
+modifier = 1
+actionRewardMax = 1
+rewardAmount = 0.003
+actions_per_second = 5
+lastAction = time.time()
+
+initial = time.time()
+reward = 0
+
+while time.time() - initial < 2:
+    elapsedTime = time.time() - lastAction
+
+
+    actionRewards = elapsedTime * rewardAmount * actions_per_second
+
+    if actionRewards < actionRewardMax:
+        reward += actionRewards
+    lastAction = time.time()
+    time.sleep(0.1)
+
+
+print(f"final reward: {reward}")

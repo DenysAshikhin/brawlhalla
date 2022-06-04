@@ -466,7 +466,7 @@ class BrawlEnv(ExternalEnv):
             reward += actionRewards
             self.actionRewards += actionRewards
 
-
+        self.lastAction = time.time()
         # if self.actionsTaken < (500 * modifier):
         #     reward += (rewardAmount / modifier)
         #     self.actionsTaken = self.actionsTaken + 1
