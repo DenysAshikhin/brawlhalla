@@ -99,8 +99,8 @@ needReset = False
 
 while True:
 
-    if needReset:
-        env.releaseAllKeys()
+    # if needReset:
+    #     env.releaseAllKeys()
 
     elapsed_time = time.time() - actionTime
     if elapsed_time < actionTimeOut:
@@ -137,7 +137,7 @@ while True:
 
     if needReset:
         print('starting reset!')
-        env.releaseAllKeys()
+        # env.releaseAllKeys()
         env.restartRound()
         needReset = False
         reward = 0
