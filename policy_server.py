@@ -213,5 +213,5 @@ tune.run(trainer,
          resume = False,
          config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
          max_failures=99,
-         # restore="C:\\Users\\denys\\ray_results\\mediumbrawl1-v3\\PPOTrainer_RandomEnv_8acb7_00000_0_2022-05-28_20-16-11\\checkpoint_000058\\checkpoint-58",
+         restore="C:\\Users\\denys\\ray_results\\mediumbrawl-attention-256Att-128MLP-L2\\PPOTrainer_RandomEnv_1e882_00000_0_2022-06-02_15-13-44\\checkpoint_000028\\checkpoint-28",
          checkpoint_freq=1, checkpoint_at_end=True)

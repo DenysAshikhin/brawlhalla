@@ -73,12 +73,6 @@ reward = 0
 print('starting main loop')
 replayList = []
 
-if args.speed is not None:
-    print(f"multiply by {args.speed}")
-
-    env.underlord.mouseSleepTime *= args.speed
-    env.underlord.shopSleepTime *= args.speed
-
 update = True
 
 runningReward = 0
@@ -89,10 +83,13 @@ runningCounter = 0
 startTime = time.time()
 endTime = time.time()
 
-env.restartRound()
 
 actionTimeOut = 0.2
 actionTime = time.time()
+
+env.restartRound()
+
+
 
 epochActions = 4096
 actionsUntilEpoch = 4096

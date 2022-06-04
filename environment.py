@@ -138,6 +138,8 @@ from skimage.transform import resize
 
 x = 320
 y = 240
+
+
 # x = 640
 # y = 480
 
@@ -212,6 +214,7 @@ class BrawlEnv(ExternalEnv):
         self.enemyStock = 3
         self.actionsTaken = 0
         self.failedStocks = 0
+        self.pressedKeys = [0,0,0,0,0,0,0,0,0]
 
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
         offSet = findOffset(imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3])
@@ -244,60 +247,113 @@ class BrawlEnv(ExternalEnv):
 
         print('got past main loop')
 
-    def releaseAllKeys(self):
+    def releaseAllKeys(self, Force=False):
 
-        # keyHold(KEY_SPACE)
+        # print('reseting actions: ')
+        #
+        # actions = np.array(self.pressedKeys)
+        # print(actions)
+        #
+        # if actions[0] == 1 or Force:
+        #     keyRelease(KEY_W)
+        #     actions[0] = 0
+        #     print('releasing W')
+        #
+        # if actions[1] == 1 or Force:
+        #     keyRelease(KEY_A)
+        #     print('releasing A')
+        #     actions[1] = 0
+        #
+        # if actions[2] == 1 or Force:
+        #     keyRelease(KEY_S)
+        #     print('releasing S')
+        #     actions[2] = 0
+        #
+        # if actions[3] == 1 or Force:
+        #     keyRelease(KEY_D)
+        #     print('releasing D')
+        #     actions[3] = 0
+        #
+        # if actions[4] == 1 or Force:
+        #     keyRelease(KEY_SPACE)
+        #     actions[4] = 0
+        #     print('releasing SPACE')
+        #
+        # if actions[5] == 1 or Force:
+        #     keyRelease(KEY_H)
+        #     actions[5] = 0
+        #     print('releasing H')
+        #
+        # if actions[6] == 1 or Force:
+        #     keyRelease(KEY_J)
+        #     actions[6] = 0
+        #     print('releasing J')
+        #
+        # if actions[7] == 1 or Force:
+        #     keyRelease(KEY_K)
+        #     actions[7] = 0
+        #     print('releasing K')
+        #
+        # if actions[8] == 1 or Force:
+        #     keyRelease(KEY_L)
+        #     actions[8] = 0
+        #     print('releasing L')
+        #
+        # self.pressedKeys = actions
+        #
+        # return
+
+        keyHold(KEY_SPACE)
         time.sleep(0.01)
         keyRelease(KEY_SPACE)
 
-        # keyHold(KEY_W)
+        keyHold(KEY_W)
         time.sleep(0.01)
         keyRelease(KEY_W)
 
-        # time.sleep(0.01)
-        # keyHold(KEY_A)
+        time.sleep(0.01)
+        keyHold(KEY_A)
         time.sleep(0.01)
         keyRelease(KEY_A)
 
-        # time.sleep(0.01)
-        # keyHold(KEY_S)
+        time.sleep(0.01)
+        keyHold(KEY_S)
         time.sleep(0.01)
         keyRelease(KEY_S)
 
-        # time.sleep(0.01)
-        # keyHold(KEY_D)
+        time.sleep(0.01)
+        keyHold(KEY_D)
         time.sleep(0.01)
         keyRelease(KEY_D)
 
-        # time.sleep(0.01)
-        # keyHold(KEY_H)
+        time.sleep(0.01)
+        keyHold(KEY_H)
         time.sleep(0.01)
         keyRelease(KEY_H)
 
-        # time.sleep(0.01)
-        # keyHold(KEY_J)
+        time.sleep(0.01)
+        keyHold(KEY_J)
         time.sleep(0.01)
         keyRelease(KEY_J)
 
-        # time.sleep(0.01)
-        # keyHold(KEY_K)
+        time.sleep(0.01)
+        keyHold(KEY_K)
         time.sleep(0.01)
         keyRelease(KEY_K)
 
-        # time.sleep(0.01)
-        # keyHold(KEY_L)
+        time.sleep(0.01)
+        keyHold(KEY_L)
         time.sleep(0.01)
         keyRelease(KEY_L)
 
         # time.sleep(0.01)
         # keyHold(KEY_C)
-        time.sleep(0.01)
-        keyRelease(KEY_C)
+        # time.sleep(0.01)
+        # keyRelease(KEY_C)
 
     def startInitialGame(self):
 
         return None
-
 
     def resetValues(self):
         self.enemyStock = 3
@@ -305,6 +361,7 @@ class BrawlEnv(ExternalEnv):
         self.actionsTaken = 0
         self.gameOver = False
         self.failedStocks = 0
+        self.pressedKeys =[0,0,0,0,0,0,0,0,0]
 
     def restartMatch(self):
 
@@ -316,7 +373,7 @@ class BrawlEnv(ExternalEnv):
 
     def restartRound(self):
 
-        self.releaseAllKeys()
+        # self.releaseAllKeys()
         self.resetValues()
         self.restartMatch()
 
@@ -403,51 +460,55 @@ class BrawlEnv(ExternalEnv):
 
     def act(self, actions):
 
+        self.pressedKeys = actions
+
+        delay = 0.0075
+
         if actions[0] == 0:
             keyRelease(KEY_W)
         else:
             keyHold(KEY_W)
-
+        time.sleep(delay)
         if actions[1] == 0:
             keyRelease(KEY_A)
         else:
             keyHold(KEY_A)
-
+        time.sleep(delay)
         if actions[2] == 0:
             keyRelease(KEY_S)
         else:
             keyHold(KEY_S)
-
+        time.sleep(delay)
         if actions[3] == 0:
             keyRelease(KEY_D)
         else:
             keyHold(KEY_D)
-
+        time.sleep(delay)
         if actions[4] == 0:
             keyRelease(KEY_SPACE)
         else:
             keyHold(KEY_SPACE)
-
+        time.sleep(delay)
         if actions[5] == 0:
             keyRelease(KEY_H)
         else:
             keyHold(KEY_H)
-
+        time.sleep(delay)
         if actions[6] == 0:
             keyRelease(KEY_J)
         else:
             keyHold(KEY_J)
-
+        time.sleep(delay)
         if actions[7] == 0:
             keyRelease(KEY_K)
         else:
             keyHold(KEY_K)
-
+        time.sleep(delay)
         if actions[8] == 0:
             keyRelease(KEY_L)
         else:
             keyHold(KEY_L)
-
+        time.sleep(delay)
         return 0
 
     def run(self):  # if I can't get this to work, try not overriding it in the first place?
