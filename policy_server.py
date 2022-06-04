@@ -17,7 +17,7 @@ parser.add_argument('-checkpoint', type=str, help='location of checkpoint to res
 args = parser.parse_args()
 
 DEFAULT_CONFIG = with_common_config({
-    "gamma": 0.999,
+    "gamma": 0.996,
     # Should use a critic as a baseline (otherwise don't use value baseline;
     # required for using GAE).
     "use_critic": True,
@@ -61,14 +61,14 @@ DEFAULT_CONFIG = with_common_config({
         # "lstm_use_prev_action": True,
 
         'use_attention': True,
-        "max_seq_len": 30,
-        "attention_num_transformer_units": 2,
-        "attention_dim": 256,
-        "attention_memory_inference": 100,
+        "max_seq_len": 50,
+        "attention_num_transformer_units": 1,
+        "attention_dim": 384,
+        "attention_memory_inference": 50,
         "attention_memory_training": 50,
         "attention_num_heads": 8,
         "attention_head_dim": 32,
-        "attention_position_wise_mlp_dim": 128,
+        "attention_position_wise_mlp_dim": 256,
         "attention_use_n_prev_actions": 0,
         "attention_use_n_prev_rewards": 0,
         "attention_init_gru_gate_bias": 2.0,
@@ -213,5 +213,5 @@ tune.run(trainer,
          resume = False,
          config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
          max_failures=99,
-         restore="C:\\Users\\denys\\ray_results\\mediumbrawl-attention-256Att-128MLP-L2\\PPOTrainer_RandomEnv_1e882_00000_0_2022-06-02_15-13-44\\checkpoint_000028\\checkpoint-28",
+         # restore="C:\\Users\\denys\\ray_results\\mediumbrawl-attention-256Att-128MLP-L2\\PPOTrainer_RandomEnv_1e882_00000_0_2022-06-02_15-13-44\\checkpoint_000028\\checkpoint-28",
          checkpoint_freq=1, checkpoint_at_end=True)

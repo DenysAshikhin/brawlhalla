@@ -215,6 +215,8 @@ class BrawlEnv(ExternalEnv):
         self.actionsTaken = 0
         self.failedStocks = 0
         self.pressedKeys = [0,0,0,0,0,0,0,0,0]
+        self.lastAction = time.time()
+        self.actionRewards = 0
 
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
         offSet = findOffset(imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3])
@@ -362,6 +364,8 @@ class BrawlEnv(ExternalEnv):
         self.gameOver = False
         self.failedStocks = 0
         self.pressedKeys =[0,0,0,0,0,0,0,0,0]
+        self.lastAction = time.time()
+        self.actionRewards = 0
 
     def restartMatch(self):
 
@@ -451,18 +455,29 @@ class BrawlEnv(ExternalEnv):
                 reward -= 0.33 * self.enemyStock
 
         modifier = 1
+        actionRewardMax = 1
+        elapsedTime = time.time() - self.lastAction
 
-        if self.actionsTaken < (500 * modifier):
-            reward += (0.003 / modifier)
-            self.actionsTaken = self.actionsTaken + 1
+        rewardAmount = 0.003
+        actions_per_second = 5
+        actionRewards = elapsedTime * rewardAmount * actions_per_second
 
-        return (grayscale_image, reward, self.gameOver)
+        if self.actionRewards < actionRewardMax:
+            reward += actionRewards
+            self.actionRewards += actionRewards
+
+
+        # if self.actionsTaken < (500 * modifier):
+        #     reward += (rewardAmount / modifier)
+        #     self.actionsTaken = self.actionsTaken + 1
+
+        return grayscale_image, reward, self.gameOver
 
     def act(self, actions):
 
         self.pressedKeys = actions
 
-        delay = 0.0075
+        delay = 0.005
 
         if actions[0] == 0:
             keyRelease(KEY_W)
