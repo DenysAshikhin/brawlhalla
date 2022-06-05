@@ -214,7 +214,7 @@ class BrawlEnv(ExternalEnv):
         self.enemyStock = 3
         self.actionsTaken = 0
         self.failedStocks = 0
-        self.pressedKeys = [0,0,0,0,0,0,0,0,0]
+        self.pressedKeys = [0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.lastAction = time.time()
         self.actionRewards = 0
 
@@ -363,7 +363,7 @@ class BrawlEnv(ExternalEnv):
         self.actionsTaken = 0
         self.gameOver = False
         self.failedStocks = 0
-        self.pressedKeys =[0,0,0,0,0,0,0,0,0]
+        self.pressedKeys = [0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.lastAction = time.time()
         self.actionRewards = 0
 
@@ -449,18 +449,20 @@ class BrawlEnv(ExternalEnv):
 
             if self.enemyStock < self.currentStock:
                 reward += 1
-                reward += 0.33 * self.enemyStock
+                reward += 0.33 * self.currentStock
             elif self.currentStock < self.enemyStock:
                 reward -= 1
                 reward -= 0.33 * self.enemyStock
 
         modifier = 1
-        actionRewardMax = 1
+        actionRewardMax = 1.51
+        actionPerSecond = 0.0125  # 120 seconds * 0.0125 = 1.5. Max negative is -3
         elapsedTime = time.time() - self.lastAction
 
-        rewardAmount = 0.003
-        actions_per_second = 5
-        actionRewards = elapsedTime * rewardAmount * actions_per_second
+        # rewardAmount = 0.003
+        # actions_per_second = 5
+        # actionRewards = elapsedTime * rewardAmount * actions_per_second
+        actionRewards = elapsedTime * actionPerSecond
 
         if self.actionRewards < actionRewardMax:
             reward += actionRewards

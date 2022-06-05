@@ -49,7 +49,7 @@ DEFAULT_CONFIG = with_common_config({
     "lr_schedule": None,
     # Coefficient of the value function loss. IMPORTANT: you must tune this if
     # you set vf_share_layers=True inside your model's config.
-    "vf_loss_coeff": 0.1,
+    "vf_loss_coeff": 0.01,
     "model": {
         # Share layers for value function. If you set this to True, it's
         # important to tune vf_loss_coeff.
@@ -123,7 +123,7 @@ DEFAULT_CONFIG = with_common_config({
     "clip_param": 0.2,
     # Clip param for the value function. Note that this is sensitive to the
     # scale of the rewards. If your expected V is large, increase this.
-    "vf_clip_param": 2.0,
+    "vf_clip_param": 5.0,
     # If specified, clip the global norm of gradients by this amount.
     "grad_clip": None,
     # Whether to rollout "complete_episodes" or "truncate_episodes".
