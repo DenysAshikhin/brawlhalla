@@ -136,12 +136,22 @@ while True:
     action = client.get_action(episode_id=episode_id, observation=gameObservation)
 
     if needReset:
+
         print('starting reset!')
+
+        if local == 'local':
+            print("updating weights")
+            client.update_policy_weights()
+            print('finished updating weights')
+
         # env.releaseAllKeys()
         env.restartRound()
         needReset = False
         reward = 0
         gameOver = False
+
+
+
         print('resetFinished!')
     else:
         env.act(action)
@@ -198,9 +208,7 @@ while True:
         episode_id = client.start_episode(episode_id=None)
         # print('started new episode')
 
-        if local == 'local':
-            print("updating weights")
-            client.update_policy_weights()
+
         # print("restarting round")
         # env.restartRound()
         # print('round restarted')
