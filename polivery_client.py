@@ -125,11 +125,11 @@ while True:
     # print(env.observation_space.contains(gameObservation))
     # print(reward, gameOver)
 
-    if not env.observation_space.contains(gameObservation):
-        print(gameObservation)
-        print("Not lined up 1")
-        print(env.underlord.heroAlliances)
-        sys.exit()
+    # if not env.observation_space.contains(gameObservation):
+    #     print(gameObservation)
+    #     print("Not lined up 1")
+    #     print(env.underlord.heroAlliances)
+    #     sys.exit()
 
     action = None
 
@@ -198,10 +198,10 @@ while True:
         # need to call a reset of env here
         finalObs, reward, gameOver = env.getObservation()
 
-        if not env.observation_space.contains(finalObs):
-            print(gameObservation)
-            print("Not lined up 3")
-            sys.exit()
+        # if not env.observation_space.contains(finalObs):
+        #     print(gameObservation)
+        #     print("Not lined up 3")
+        #     sys.exit()
 
         client.end_episode(episode_id=episode_id, observation=finalObs)
         # print('ended episode')
