@@ -449,14 +449,15 @@ class BrawlEnv(ExternalEnv):
 
             if self.enemyStock < self.currentStock:
                 reward += 1
-                reward += 0.33 * self.currentStock
+                # reward += 0.33 * self.currentStock
             elif self.currentStock < self.enemyStock:
                 reward -= 1
-                reward -= 0.33 * self.enemyStock
+                # reward -= 0.33 * self.enemyStock
 
         modifier = 1
-        actionRewardMax = 1.51
-        actionPerSecond = 0.0125  # 120 seconds * 0.0125 = 1.5. Max negative is -3
+        maxLengthGame = 200
+        actionRewardMax = 1.25
+        actionPerSecond = actionRewardMax / maxLengthGame   # Max negative is -2
         elapsedTime = time.time() - self.lastAction
 
         # rewardAmount = 0.003
