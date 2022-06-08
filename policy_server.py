@@ -63,7 +63,7 @@ DEFAULT_CONFIG = with_common_config({
         'use_attention': True,
         "max_seq_len": 50,
         "attention_num_transformer_units": 1,
-        "attention_dim": 384,
+        "attention_dim": 512,
         "attention_memory_inference": 50,
         "attention_memory_training": 50,
         "attention_num_heads": 8,
