@@ -450,7 +450,7 @@ class BrawlEnv(ExternalEnv):
         grayscale_image = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
         # print(grayscale_image.shape)
         print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
-        print(f"my health: {self.myHealth} - enemy health: {self.enemyHealth}")
+        print(f"my health: {myHealth/self.maxHP} - enemy health: {enemyHealth/self.maxHP}")
         reward = 0
 
         gameOver = False
@@ -458,9 +458,17 @@ class BrawlEnv(ExternalEnv):
 
         if my_stock != -1 and enemy_stock != -1:
 
+            percentMyHP = myHealth / self.maxHP
+            percentEnemyHP = enemyHealth / self.maxHP
+
+            if my_stock < self.currentStock:
+                self.myHealth = 1
+            if enemy_stock < self.enemyStock:
+                self.enemyHealth = 1
+
             deltaEnemyHP = self.enemyHealth - (enemyHealth/self.maxHP)
-            percentMyHP = myHealth/self.maxHP
-            deltaMyHP = self.myHealth - deltaEnemyHP
+
+            deltaMyHP = self.myHealth - (myHealth/self.maxHP)
 
             # self.rewards = {"damage_dealt": 0, "damage_taken": 0, "deaths": 0, "kills": 0}
 
@@ -469,21 +477,20 @@ class BrawlEnv(ExternalEnv):
                 reward -= 0.33 + sigmoidHP(percentMyHP)
                 self.rewards["deaths"] -= 0.33 + sigmoidHP(percentMyHP)
                 self.currentStock = my_stock
-
+            else:
+                reward -= (deltaMyHP / 251) / 3.621
+                self.myHealth = percentMyHP
+                self.rewards["damage_taken"] -= (deltaMyHP / 251) / 3.621
             if enemy_stock < self.enemyStock:
                 reward += 0.33
                 self.enemyStock = enemy_stock
                 self.rewards["kills"] += 0.33
+            else:
+                reward += (deltaEnemyHP / 251) / 3.621
+                self.enemyHealth = percentEnemyHP
+                self.rewards["damage_dealt"] += (deltaEnemyHP / 251) / 3.621
 
-            #Reward per action
-            reward += deltaEnemyHP / 251 / 3.621
-            reward -= deltaMyHP / 251 / 3.621
-
-            self.enemyHealth = enemyHealth
-            self.myHealth = myHealth
-
-            self.rewards["damage_dealt"] += deltaEnemyHP / 251 / 3.621
-            self.rewards["damage_taken"] += deltaMyHP / 251 / 3.621
+            
 
 
             self.failedStocks = 0
