@@ -34,6 +34,7 @@ def loadDigits():
 
 def imageGrab(x=0, y=0, w=0, h=0, grabber=None):
     image = numpy.array(grabber.grab({"top": y, "left": x, "width": w, "height": h}))
+    cv2.imwrite("1.jpg", image)
     return image
 
 
@@ -71,6 +72,9 @@ def keyHold(key):
 
 def keyRelease(key):
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), win32con.KEYEVENTF_KEYUP, 0)
+
+def countCurrentHealth(img):
+    return numpy.mean(img)
 
 
 def countLife(img, templates):
@@ -115,7 +119,7 @@ def findOffset(image):
 
     if len(hits['TemplateName']) == 0:
         print("Gear Icon Used for Template not found")
-        sys.exit()
+        exit()
 
     return hits['BBox'].iloc[0]
 
@@ -131,7 +135,7 @@ import threading
 import time
 from typing import Union, Optional
 
-from ray.rllib.env import ExternalEnv, MultiAgentEnv, ExternalMultiAgentEnv
+from ray.rllib.env import ExternalEnv
 from ray.rllib.utils.typing import MultiAgentDict, EnvInfoDict, EnvObsType, EnvActionType
 
 from skimage.transform import resize
@@ -218,6 +222,9 @@ class BrawlEnv(ExternalEnv):
         self.lastAction = time.time()
         self.actionRewards = 0
 
+        self.myHealth = 0
+        self.enemyHealth = 0
+
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
         offSet = findOffset(imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3])
 
@@ -244,6 +251,10 @@ class BrawlEnv(ExternalEnv):
         self.enemyStockX = 585 + self.xOffset
 
         self.stockY = 63 + self.yOffset
+
+        self.lifeX = 560 + self.xOffset
+        self.enemyLifeX = 598 + self.xOffset
+        self.lifeY = 74 + self.yOffset
 
         self.gameOver = False
 
@@ -395,6 +406,12 @@ class BrawlEnv(ExternalEnv):
         my_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.myStockX:self.myStockX + 10]
         enemy_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
 
+
+        my_health_img = grayscale_image[self.lifeY:self.lifeY, self.lifeX:self.lifeX + 10]
+        enemy_health_img = grayscale_image[self.lifeY:self.lifeY, self.enemyLifeX:self.enemyLifeX + 10]
+
+        self.myHealth = countCurrentHealth(my_health_img)
+        self.enemyHealth = countCurrentHealth(enemy_health_img)
         # # Extract one channel green channel, screen capture goes BGR from stocks
         # my_stock_img = my_stock_img
         # # plt.subplot(1, 1, 1), plt.imshow(my_stock_img, 'gray', vmin=0, vmax=255)
@@ -412,7 +429,7 @@ class BrawlEnv(ExternalEnv):
         grayscale_image = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
         # print(grayscale_image.shape)
         print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
-
+        print(f"my health: {self.myHealth} - enemy health: {self.enemyHealth}")
         reward = 0
 
         gameOver = False

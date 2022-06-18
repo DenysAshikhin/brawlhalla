@@ -21,7 +21,7 @@ from gym import spaces
 # print(spacy.contains(testy))
 
 
-# env = BrawlEnv()
+env = BrawlEnv()
 #
 # obs = env.getObservation()[0]
 # print(obs[120][120])
