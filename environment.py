@@ -1,3 +1,5 @@
+import math
+
 import MTM
 import numpy
 import ctypes
@@ -31,6 +33,16 @@ def loadDigits():
             digitsList.append((str(i), img))
     return digitsList
 
+def sigmoidHP (hp):
+    lowerBound = 0.33
+    mapMin = -3.5
+    mapMax = 0.5
+    # Takes hp as percent (0.33 to 1), remaps that value between (-mapMin and mapMax)
+    hp_remap = (hp -lowerBound) * (mapMax - mapMin) / (1-hp) + mapMin
+
+    # Apply sigmoid function to remapped value
+    hp_sigmoid = 1/(1+math.e**-hp_remap)+0.33
+    return hp_sigmoid
 
 def imageGrab(x=0, y=0, w=0, h=0, grabber=None):
     image = numpy.array(grabber.grab({"top": y, "left": x, "width": w, "height": h}))
@@ -75,8 +87,8 @@ def keyRelease(key):
 
 def countCurrentHealth(img):
     x = numpy.mean(img)
-    damage = 416 - 5.76 * x + 0.0405 * x ** 2 - 1.21 * x ** 3 * 10 ** -4 + x ** 4 * 10 ** - 7
-    return damagea
+    # damage = 416 - 5.76 * x + 0.0405 * x ** 2 - 1.21 * x ** 3 * 10 ** -4 + x ** 4 * 10 ** - 7
+    return x
 
 
 def countLife(img, templates):
