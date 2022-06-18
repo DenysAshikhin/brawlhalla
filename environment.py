@@ -216,7 +216,10 @@ class BrawlEnv(ExternalEnv):
         self.width = width
         self.height = height
 
+        self.maxHP = 251
         self.currentStock = 3
+        self.myHealth = 1
+        self.enemyHealth = 1
         self.enemyStock = 3
         self.actionsTaken = 0
         self.failedStocks = 0
@@ -371,8 +374,10 @@ class BrawlEnv(ExternalEnv):
         return None
 
     def resetValues(self):
-        self.enemyStock = 3
         self.currentStock = 3
+        self.myHealth = 1
+        self.enemyHealth = 1
+        self.enemyStock = 3
         self.actionsTaken = 0
         self.gameOver = False
         self.failedStocks = 0
@@ -411,8 +416,8 @@ class BrawlEnv(ExternalEnv):
         my_health_img = grayscale_image[self.lifeY:self.lifeY+1, self.lifeX:self.lifeX + 10]
         enemy_health_img = grayscale_image[self.lifeY:self.lifeY+1, self.enemyLifeX:self.enemyLifeX + 10]
 
-        self.myHealth = countCurrentHealth(my_health_img)
-        self.enemyHealth = countCurrentHealth(enemy_health_img)
+        myHealth = countCurrentHealth(my_health_img)
+        enemyHealth = countCurrentHealth(enemy_health_img)
 
         # # Extract one channel green channel, screen capture goes BGR from stocks
         # my_stock_img = my_stock_img
@@ -439,13 +444,27 @@ class BrawlEnv(ExternalEnv):
 
         if my_stock != -1 and enemy_stock != -1:
 
+            deltaEnemyHP = self.enemyHealth - (enemyHealth/self.maxHP)
+            percentMyHP = myHealth/self.maxHP
+            deltaMyHP = self.myHealth - deltaEnemyHP
+
             if my_stock < self.currentStock:
-                reward -= 0.33
+
+                sigmoidFunc = 1111
+                reward -= 0.33 + sigmoidFunc
                 self.currentStock = my_stock
 
             if enemy_stock < self.enemyStock:
                 reward += 0.33
                 self.enemyStock = enemy_stock
+
+            #Reward per action
+            reward += deltaEnemyHP / 251 / 3.621
+            reward -= deltaMyHP / 251 / 3.621
+
+            self.enemyHealth = enemyHealth
+            self.myHealth = myHealth
+
 
             self.failedStocks = 0
         elif my_stock == -1 and enemy_stock == -1:
