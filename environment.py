@@ -226,6 +226,7 @@ class BrawlEnv(ExternalEnv):
         self.pressedKeys = [0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.lastAction = time.time()
         self.actionRewards = 0
+        self.rewards = {"damage_dealt": 0, "damage_taken": 0, "deaths": 0, "kills": 0, "win": 0, "loss": 0}
 
         self.myHealth = 0
         self.enemyHealth = 0
@@ -384,6 +385,7 @@ class BrawlEnv(ExternalEnv):
         self.pressedKeys = [0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.lastAction = time.time()
         self.actionRewards = 0
+        self.rewards = {"damage_dealt": 0, "damage_taken": 0, "deaths": 0, "kills": 0, "win": 0, "loss": 0}
 
     def restartMatch(self):
 
@@ -448,15 +450,19 @@ class BrawlEnv(ExternalEnv):
             percentMyHP = myHealth/self.maxHP
             deltaMyHP = self.myHealth - deltaEnemyHP
 
+            # self.rewards = {"damage_dealt": 0, "damage_taken": 0, "deaths": 0, "kills": 0}
+
             if my_stock < self.currentStock:
 
                 sigmoidFunc = 1111
                 reward -= 0.33 + sigmoidFunc
+                self.rewards["deaths"] -= 0.33 + sigmoidFunc
                 self.currentStock = my_stock
 
             if enemy_stock < self.enemyStock:
                 reward += 0.33
                 self.enemyStock = enemy_stock
+                self.rewards["kills"] += 0.33
 
             #Reward per action
             reward += deltaEnemyHP / 251 / 3.621
@@ -464,6 +470,9 @@ class BrawlEnv(ExternalEnv):
 
             self.enemyHealth = enemyHealth
             self.myHealth = myHealth
+
+            self.rewards["damage_dealt"] += deltaEnemyHP / 251 / 3.621
+            self.rewards["damage_taken"] += deltaMyHP / 251 / 3.621
 
 
             self.failedStocks = 0
@@ -476,10 +485,12 @@ class BrawlEnv(ExternalEnv):
             if enemy_stock == 0:
                 self.gameOver = True
                 reward += 1
+                self.rewards["win"] = 1
 
             if my_stock == 0:
                 self.gameOver = True
                 reward -= 1
+                self.rewards["loss"] = -1
 
         # Emergency breaker to just kill the game
         elif self.failedStocks > 13 or forceEnd == True:

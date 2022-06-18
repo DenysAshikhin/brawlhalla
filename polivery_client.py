@@ -188,7 +188,7 @@ while True:
             epochNum = epochNum + 1
 
         print(f"Actions until epoch: {actionsUntilEpoch}, current epoch: {epochNum}")
-
+        print(env.rewards)
         if actionsUntilEpoch < 0:
             actionsUntilEpoch = epochActions
 
