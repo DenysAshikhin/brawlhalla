@@ -453,14 +453,15 @@ class BrawlEnv(ExternalEnv):
         # print(grayscale_image.shape)
         grayscale_image = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
         # print(grayscale_image.shape)
-        print(f"my stock: {my_stock} - enemy stock: {enemy_stock}")
-        print(f"my health: {myHealth/self.maxHP} - enemy health: {enemyHealth/self.maxHP}")
+
         reward = 0
 
         gameOver = False
         forceEnd = False
 
         if my_stock != -1 and enemy_stock != -1:
+
+            print(f"my stock, health: {my_stock}, {round(myHealth / self.maxHP,2)} - enemy stock, health: {enemy_stock}, {round(enemyHealth / self.maxHP,2)}")
 
             percentMyHP = myHealth / self.maxHP
             percentEnemyHP = enemyHealth / self.maxHP
@@ -481,7 +482,7 @@ class BrawlEnv(ExternalEnv):
                 reward -= 0.33 + sigmoidHP(percentMyHP)
                 self.rewards["deaths"] -= 0.33 + sigmoidHP(percentMyHP)
                 self.currentStock = my_stock
-            else:
+            elif deltaMyHP > 0:
                 reward -= (deltaMyHP / 251) / 3.621
                 self.myHealth = percentMyHP
                 self.rewards["damage_taken"] -= (deltaMyHP / 251) / 3.621
@@ -489,7 +490,7 @@ class BrawlEnv(ExternalEnv):
                 reward += 0.33
                 self.enemyStock = enemy_stock
                 self.rewards["kills"] += 0.33
-            else:
+            elif deltaEnemyHP > 0 :
                 reward += (deltaEnemyHP / 251) / 3.621
                 self.enemyHealth = percentEnemyHP
                 self.rewards["damage_dealt"] += (deltaEnemyHP / 251) / 3.621
