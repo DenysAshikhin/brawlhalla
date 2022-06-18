@@ -34,7 +34,6 @@ def loadDigits():
 
 def imageGrab(x=0, y=0, w=0, h=0, grabber=None):
     image = numpy.array(grabber.grab({"top": y, "left": x, "width": w, "height": h}))
-    cv2.imwrite("1.jpg", image)
     return image
 
 
@@ -72,6 +71,7 @@ def keyHold(key):
 
 def keyRelease(key):
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), win32con.KEYEVENTF_KEYUP, 0)
+
 
 def countCurrentHealth(img):
     return numpy.mean(img)
@@ -406,12 +406,12 @@ class BrawlEnv(ExternalEnv):
         my_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.myStockX:self.myStockX + 10]
         enemy_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
 
-
-        my_health_img = grayscale_image[self.lifeY:self.lifeY, self.lifeX:self.lifeX + 10]
-        enemy_health_img = grayscale_image[self.lifeY:self.lifeY, self.enemyLifeX:self.enemyLifeX + 10]
+        my_health_img = grayscale_image[self.lifeY:self.lifeY+1, self.lifeX:self.lifeX + 10]
+        enemy_health_img = grayscale_image[self.lifeY:self.lifeY+1, self.enemyLifeX:self.enemyLifeX + 10]
 
         self.myHealth = countCurrentHealth(my_health_img)
         self.enemyHealth = countCurrentHealth(enemy_health_img)
+
         # # Extract one channel green channel, screen capture goes BGR from stocks
         # my_stock_img = my_stock_img
         # # plt.subplot(1, 1, 1), plt.imshow(my_stock_img, 'gray', vmin=0, vmax=255)
@@ -474,7 +474,7 @@ class BrawlEnv(ExternalEnv):
         modifier = 1
         maxLengthGame = 200
         actionRewardMax = 1.25
-        actionPerSecond = actionRewardMax / maxLengthGame   # Max negative is -2
+        actionPerSecond = actionRewardMax / maxLengthGame  # Max negative is -2
         elapsedTime = time.time() - self.lastAction
 
         # rewardAmount = 0.003
