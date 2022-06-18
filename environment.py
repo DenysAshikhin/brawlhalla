@@ -74,7 +74,9 @@ def keyRelease(key):
 
 
 def countCurrentHealth(img):
-    return numpy.mean(img)
+    x = numpy.mean(img)
+    damage = 416 - 5.76 * x + 0.0405 * x ** 2 - 1.21 * x ** 3 * 10 ** -4 + x ** 4 * 10 ** - 7
+    return damagea
 
 
 def countLife(img, templates):
