@@ -21,9 +21,9 @@ from gym import spaces
 # print(spacy.contains(testy))
 
 
-# env = BrawlEnv()
+env = BrawlEnv()
 #
-# obs = env.getObservation()[0]
+
 # print(obs[120][120])
 #
 #
@@ -57,14 +57,14 @@ lastAction = time.time()
 initial = time.time()
 reward = 0
 
-while time.time() - initial < 2:
+while time.time() - initial < 100000:
     elapsedTime = time.time() - lastAction
 
-
-    actionRewards = elapsedTime * rewardAmount * actions_per_second
-
-    if actionRewards < actionRewardMax:
-        reward += actionRewards
+    env.getObservation()[0]
+    # actionRewards = elapsedTime * rewardAmount * actions_per_second
+    #
+    # if actionRewards < actionRewardMax:
+    #     reward += actionRewards
     lastAction = time.time()
     time.sleep(0.1)
 
