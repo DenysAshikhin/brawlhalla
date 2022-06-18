@@ -175,6 +175,7 @@ while True:
         #     print("restarting due to elapsed time")
 
         env.releaseAllKeys()
+        env.resetHP()
 
         if reward <= -1:
             print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")

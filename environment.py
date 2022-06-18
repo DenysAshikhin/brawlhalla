@@ -399,6 +399,10 @@ class BrawlEnv(ExternalEnv):
         self.actionRewards = 0
         self.rewards = {"damage_dealt": 0, "damage_taken": 0, "deaths": 0, "kills": 0, "win": 0, "loss": 0}
 
+    def resetHP(self):
+        self.enemyHealth = 1.0
+        self.myHealth = 1.0
+
     def restartMatch(self):
 
         for i in range(8):
@@ -490,7 +494,7 @@ class BrawlEnv(ExternalEnv):
                 self.enemyHealth = percentEnemyHP
                 self.rewards["damage_dealt"] += (deltaEnemyHP / 251) / 3.621
 
-            
+
 
 
             self.failedStocks = 0
@@ -532,9 +536,9 @@ class BrawlEnv(ExternalEnv):
         # actionRewards = elapsedTime * rewardAmount * actions_per_second
         actionRewards = elapsedTime * actionPerSecond
 
-        if self.actionRewards < actionRewardMax:
-            reward += actionRewards
-            self.actionRewards += actionRewards
+        # if self.actionRewards < actionRewardMax:
+        #     reward += actionRewards
+        #     self.actionRewards += actionRewards
 
         self.lastAction = time.time()
         # if self.actionsTaken < (500 * modifier):
