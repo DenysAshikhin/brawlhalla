@@ -466,9 +466,8 @@ class BrawlEnv(ExternalEnv):
 
             if my_stock < self.currentStock:
 
-                sigmoidFunc = 1111
-                reward -= 0.33 + sigmoidFunc
-                self.rewards["deaths"] -= 0.33 + sigmoidFunc
+                reward -= 0.33 + sigmoidHP(percentMyHP)
+                self.rewards["deaths"] -= 0.33 + sigmoidHP(percentMyHP)
                 self.currentStock = my_stock
 
             if enemy_stock < self.enemyStock:
