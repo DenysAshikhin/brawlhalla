@@ -37,7 +37,7 @@ DEFAULT_CONFIG = with_common_config({
     "train_batch_size": 4096,
     # Total SGD batch size across all devices for SGD. This defines the
     # minibatch size within each epoch.
-    "sgd_minibatch_size": 128,
+    "sgd_minibatch_size": 256,
     # Number of SGD iterations in each outer loop (i.e., number of epochs to
     # execute per train batch).
     "num_sgd_iter": 1,
@@ -61,13 +61,13 @@ DEFAULT_CONFIG = with_common_config({
         # "lstm_use_prev_action": True,
 
         'use_attention': True,
-        "max_seq_len": 50,
+        "max_seq_len": 125,
         "attention_num_transformer_units": 1,
         "attention_dim": 512,
-        "attention_memory_inference": 50,
-        "attention_memory_training": 50,
+        "attention_memory_inference": 125,
+        "attention_memory_training": 125,
         "attention_num_heads": 8,
-        "attention_head_dim": 32,
+        "attention_head_dim": 64,
         "attention_position_wise_mlp_dim": 256,
         "attention_use_n_prev_actions": 0,
         "attention_use_n_prev_rewards": 0,
@@ -123,7 +123,7 @@ DEFAULT_CONFIG = with_common_config({
     "clip_param": 0.2,
     # Clip param for the value function. Note that this is sensitive to the
     # scale of the rewards. If your expected V is large, increase this.
-    "vf_clip_param": 5.0,
+    "vf_clip_param": 3.5,
     # If specified, clip the global norm of gradients by this amount.
     "grad_clip": None,
     # Whether to rollout "complete_episodes" or "truncate_episodes".
@@ -210,7 +210,7 @@ from ray import tune
 name = "" + args.checkpoint
 print(f"Starting: {name}")
 tune.run(trainer,
-         resume = False,
+         resume = 'AUTO',
          config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
          max_failures=99,
          # restore="C:\\Users\\denys\\ray_results\\mediumbrawl-attention-256Att-128MLP-L2\\PPOTrainer_RandomEnv_1e882_00000_0_2022-06-02_15-13-44\\checkpoint_000028\\checkpoint-28",

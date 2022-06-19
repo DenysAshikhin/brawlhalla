@@ -175,12 +175,22 @@ while True:
         #     print("restarting due to elapsed time")
 
         env.releaseAllKeys()
+        env.resetHP()
 
         if reward <= -1:
             print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")
+            env.gameLog += f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}\\n"
 
         else:
             print(f"GAME OVER! WE Won final reward: {runningReward}! Number of actions: {runningCounter}")
+            env.gameLog += f"GAME OVER! WE Won final reward: {runningReward}! Number of actions: {runningCounter}\n"
+
+        env.gameLog += str(env.rewards)
+
+        if runningReward <= 3:
+            f = open(f"reward-{runningReward-epochNum-runningCounter}.txt", "a")
+            f.write( env.gameLog)
+        env.gameLog = ""
 
         actionsUntilEpoch = actionsUntilEpoch - runningCounter
 
@@ -188,7 +198,7 @@ while True:
             epochNum = epochNum + 1
 
         print(f"Actions until epoch: {actionsUntilEpoch}, current epoch: {epochNum}")
-
+        print(env.rewards)
         if actionsUntilEpoch < 0:
             actionsUntilEpoch = epochActions
 
