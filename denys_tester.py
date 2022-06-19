@@ -7,8 +7,64 @@ from environment import BrawlEnv
 import environment
 import cv2 as cv
 from gym import spaces
+from pathlib import Path
+from PIL import Image
 
 plt.style.use('seaborn-whitegrid')
+
+
+runningReward = 2.3212
+epochNum = 23
+runningCounter = 586
+
+folderString = f"reward-{runningReward-epochNum-runningCounter}"
+fullString = "/replays/" + folderString
+Path(fullString).mkdir(parents=True, exist_ok=True)
+
+env = BrawlEnv()
+
+modifier = 1
+actionRewardMax = 1
+rewardAmount = 0.003
+actions_per_second = 5
+lastAction = time.time()
+
+initial = time.time()
+reward = 0
+
+x = 320
+y = 240
+
+while time.time() - initial < 1:
+    elapsedTime = time.time() - lastAction
+
+    env.getObservation()
+    # actionRewards = elapsedTime * rewardAmount * actions_per_second
+    #
+    # if actionRewards < actionRewardMax:
+    #     reward += actionRewards
+    lastAction = time.time()
+    time.sleep(0.2)
+
+index = 1
+for image in env.images:
+    print(image[0])
+    print(image[0].shape)
+    # image = numpy.reshape(y, x)
+    im = Image.fromarray(image[0])
+    print(fullString + f"/{index}.png")
+    im.save(fullString + f"/{index}.png")
+
+
+
+
+
+
+
+
+
+
+
 
 
 # x = 4
@@ -34,22 +90,22 @@ plt.style.use('seaborn-whitegrid')
 # print(f" 0.5: ${environment.sigmoidHP(0.5)}")
 # print(f" 0.2: ${environment.sigmoidHP(0.2)}")
 
-health = np.linspace(0.0, 1.0, num=25)
-health = np.flip(health)
-print(health)
-punishment = np.linspace(0,1,num=25)
-
-for i in range(25):
-    punishment[i] = environment.sigmoidHP(health[i])
-
-print(punishment)
-
-fig = plt.figure()
-ax = plt.axes()
-
-x = np.linspace(0, 10, 1000)
-plt.plot(health, punishment)
-plt.show()
+# health = np.linspace(0.0, 1.0, num=25)
+# health = np.flip(health)
+# print(health)
+# punishment = np.linspace(0,1,num=25)
+#
+# for i in range(25):
+#     punishment[i] = environment.sigmoidHP(health[i])
+#
+# print(punishment)
+#
+# fig = plt.figure()
+# ax = plt.axes()
+#
+# x = np.linspace(0, 10, 1000)
+# plt.plot(health, punishment)
+# plt.show()
 
 
 
@@ -77,26 +133,4 @@ plt.show()
 #
 # cv.imwrite('mss.png', obs)
 
-#
-# modifier = 1
-# actionRewardMax = 1
-# rewardAmount = 0.003
-# actions_per_second = 5
-# lastAction = time.time()
-#
-# initial = time.time()
-# reward = 0
-#
-# while time.time() - initial < 100000:
-#     elapsedTime = time.time() - lastAction
-#
-#     env.getObservation()[0]
-#     # actionRewards = elapsedTime * rewardAmount * actions_per_second
-#     #
-#     # if actionRewards < actionRewardMax:
-#     #     reward += actionRewards
-#     lastAction = time.time()
-#     time.sleep(0.1)
-#
-#
-# print(f"final reward: {reward}")
+

@@ -258,6 +258,7 @@ class BrawlEnv(ExternalEnv):
         self.tempMyStock= 3
         self.tempEnemyStock = 3
         self.gameLog = ""
+        self.images = []
 
         self.myHealth = 0
         self.enemyHealth = 0
@@ -422,6 +423,7 @@ class BrawlEnv(ExternalEnv):
         self.tempMyStock = 3
         self.tempEnemyStock = 3
         self.gameLog = ""
+        self.images = []
 
     def resetHP(self):
         self.enemyHealth = 1.0
@@ -584,6 +586,8 @@ class BrawlEnv(ExternalEnv):
         # if self.actionsTaken < (500 * modifier):
         #     reward += (rewardAmount / modifier)
         #     self.actionsTaken = self.actionsTaken + 1
+
+        self.images.append(grayscale_image)
 
         return grayscale_image, reward, self.gameOver
 
