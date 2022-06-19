@@ -179,9 +179,18 @@ while True:
 
         if reward <= -1:
             print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")
+            env.gameLog += f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}\\n"
 
         else:
             print(f"GAME OVER! WE Won final reward: {runningReward}! Number of actions: {runningCounter}")
+            env.gameLog += f"GAME OVER! WE Won final reward: {runningReward}! Number of actions: {runningCounter}\n"
+
+        env.gameLog += str(env.rewards)
+
+        if runningReward <= 3:
+            f = open(f"reward-{runningReward-epochNum-runningCounter}.txt", "a")
+            f.write( env.gameLog)
+        env.gameLog = ""
 
         actionsUntilEpoch = actionsUntilEpoch - runningCounter
 
