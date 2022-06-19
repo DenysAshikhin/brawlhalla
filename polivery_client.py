@@ -188,7 +188,7 @@ while True:
         env.gameLog += str(env.rewards)
 
         if runningReward <= 3:
-            f = open(f"reward-{runningReward-epochNum-runningCounter}.txt", "a")
+            f = open(f"reward-{round(runningReward,4)}-{epochNum}-{runningCounter}.txt", "a")
             f.write( env.gameLog)
         env.gameLog = ""
 
