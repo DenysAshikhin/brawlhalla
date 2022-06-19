@@ -1,9 +1,13 @@
+import os
+import sys
 import time
 
+from moviepy.editor import *
 import numpy
 import numpy as np
 from matplotlib import pyplot as plt
 from environment import BrawlEnv
+
 import environment
 import cv2 as cv
 from gym import spaces
@@ -17,8 +21,8 @@ runningReward = 2.3212
 epochNum = 23
 runningCounter = 586
 
-folderString = f"reward-{runningReward-epochNum-runningCounter}"
-fullString = "/replays/" + folderString
+folderString = f"reward-{round(runningReward,4)}-{epochNum}-{runningCounter}"
+fullString = os.getcwd() + "/replays/" + folderString
 Path(fullString).mkdir(parents=True, exist_ok=True)
 
 env = BrawlEnv()
@@ -35,9 +39,8 @@ reward = 0
 x = 320
 y = 240
 
-while time.time() - initial < 1:
+while time.time() - initial < 20:
     elapsedTime = time.time() - lastAction
-
     env.getObservation()
     # actionRewards = elapsedTime * rewardAmount * actions_per_second
     #
@@ -47,19 +50,34 @@ while time.time() - initial < 1:
     time.sleep(0.2)
 
 index = 1
-for image in env.images:
-    print(image[0])
-    print(image[0].shape)
-    # image = numpy.reshape(y, x)
-    im = Image.fromarray(image[0])
-    print(fullString + f"/{index}.png")
-    im.save(fullString + f"/{index}.png")
+# print(f"Size in mem: {len(env.images) * sys.getsizeof(env.images[0])/(10**6)}")
+# for image in env.images:
+#     print(image.shape)
+#     # image = numpy.reshape(y, x)
+#     start = time.time()
+#
+#     cv.imwrite(fullString +  f"/{index}.png", image*255)
+#     print(f"Elapsed Time {time.time() - start}")
+#     # im = Image.fromarray(image[0])
+#     # print(fullString + f"/{index}.png")
+#     index += 1
+#     # im.save(fullString + f"/{index}.png")
+
+# clip = ImageSequenceClip(env.images, fps = 6)
+# clip.write_videofile(fullString + "/video.mp4")
+
+
+start = time.time()
+fourcc = cv.VideoWriter_fourcc('M','J','P','G')
+video = cv.VideoWriter(fullString + '/video.avi', fourcc, 4.4, (x,y),False)
 
 
 
-
-
-
+for img in env.images:
+    img = img * 255.0
+    video.write(img.astype('uint8'))
+video.release()
+print(f"Elapsed Time {time.time() - start}")
 
 
 

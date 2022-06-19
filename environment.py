@@ -451,8 +451,7 @@ class BrawlEnv(ExternalEnv):
 
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
 
-        grayscale_image = np.int_(np.dot(full_screen_all[..., :3], rgb_weights))
-
+        grayscale_image = np.uint8(np.dot(full_screen_all[..., :3], rgb_weights))
         # Crop out stocks from full screen, format: top y cord, bot y cord, left x cord, right x cord
         my_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.myStockX:self.myStockX + 10]
         enemy_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
@@ -468,19 +467,22 @@ class BrawlEnv(ExternalEnv):
         # # plt.subplot(1, 1, 1), plt.imshow(my_stock_img, 'gray', vmin=0, vmax=255)
         # # plt.show()
         # enemy_stock_img = enemy_stock_img
-        # # plt.subplot(1, 1, 1) jl, plt.imshow(enemy_stock_img, 'gray', vmin=0, vmax=255)
-        # # plt.show()
+        # #         # # plt.subplot(1, 1, 1) jl, plt.imshow(enemy_stock_img, 'gray', vmin=0, vmax=255)
 
         my_stock = countLife(my_stock_img, self.templates)
         self.tempMyStock = my_stock
         enemy_stock = countLife(enemy_stock_img, self.templates)
         self.tempEnemyStock = enemy_stock
 
+        # grayscale_image = resize(grayscale_image, (y, x))
+        grayscale_image = cv2.resize(grayscale_image, (x,y), interpolation=cv2.INTER_AREA)
         grayscale_image = grayscale_image / 255.0
-        grayscale_image = resize(grayscale_image, (y, x))
+        # plt.subplot(1, 1, 1), plt.imshow(grayscale_image, 'gray', vmin=0, vmax=1)
+        # plt.show()
         # print(grayscale_image.shape)
-        grayscale_image = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
+        grayscale_image_CNN = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
         # print(grayscale_image.shape)
+
 
         reward = 0
 
@@ -589,7 +591,7 @@ class BrawlEnv(ExternalEnv):
 
         self.images.append(grayscale_image)
 
-        return grayscale_image, reward, self.gameOver
+        return grayscale_image_CNN, reward, self.gameOver
 
     def act(self, actions):
 

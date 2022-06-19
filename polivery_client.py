@@ -1,6 +1,8 @@
+import os
 from queue import Queue
 from tkinter import Tk
 
+import cv2
 import gym
 from ray.rllib.env import PolicyClient
 from ray.tune.registry import register_env
@@ -89,6 +91,8 @@ actionTime = time.time()
 
 env.restartRound()
 
+x = 320
+y = 240
 
 
 epochActions = 4096
@@ -188,8 +192,21 @@ while True:
         env.gameLog += str(env.rewards)
 
         if runningReward <= 3:
-            f = open(f"reward-{round(runningReward,4)}-{epochNum}-{runningCounter}.txt", "a")
+            folderString = f"reward-{round(runningReward, 4)}-{epochNum}-{runningCounter}"
+            fullString = os.getcwd() + "/replays/" + folderString
+
+            f = open(fullString + "/log.txt", "a")
             f.write( env.gameLog)
+
+
+            fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+            video = cv2.VideoWriter(fullString + '/video.avi', fourcc, 5, (x, y), False)
+
+            for img in env.images:
+                img = img * 255.0
+                video.write(img.astype('uint8'))
+            video.release()
+            env.images = []
         env.gameLog = ""
 
         actionsUntilEpoch = actionsUntilEpoch - runningCounter
