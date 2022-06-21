@@ -7,6 +7,8 @@ import gym
 from ray.rllib.env import PolicyClient
 from ray.tune.registry import register_env
 
+from pathlib import Path
+
 from environment import BrawlEnv
 import logging
 import time
@@ -101,10 +103,39 @@ epochNum = 0
 
 needReset = False
 
+numActions = 0
+
 while True:
 
     # if needReset:
     #     env.releaseAllKeys()
+
+    if numActions >= 3001:
+        print("probably hit a bug, made a recording and crashed")
+
+        # this would be 10 minute long game
+        if len(env.images) <= 3000:
+
+
+            folderString = f"error-{round(runningReward, 4)}-{epochNum}-{runningCounter}"
+            fullString = os.getcwd() + "/replays/" + folderString
+            Path(fullString).mkdir(parents=True, exist_ok=True)
+
+            f = open(fullString + "/log.txt", "a")
+            f.write(env.gameLog)
+
+
+
+            fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+            video = cv2.VideoWriter(fullString + '/video.avi', fourcc, 5, (x, y), False)
+
+            for img in env.images:
+                # img = img * 255.0
+                video.write(img.astype('uint8'))
+            video.release()
+            env.images = []
+
+            sys.exit()
 
     elapsed_time = time.time() - actionTime
     if elapsed_time < actionTimeOut:
@@ -191,21 +222,24 @@ while True:
 
         env.gameLog += str(env.rewards)
 
-        if runningReward <= 3:
+        if runningReward >= -2.5:
+
+
             folderString = f"reward-{round(runningReward, 4)}-{epochNum}-{runningCounter}"
             fullString = os.getcwd() + "/replays/" + folderString
-
+            Path(fullString).mkdir(parents=True, exist_ok=True)
             f = open(fullString + "/log.txt", "a")
             f.write( env.gameLog)
 
+            #this would be 10 minute long game
+            if len(env.images) <= 3000:
+                fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+                video = cv2.VideoWriter(fullString + '/video.avi', fourcc, 5, (x, y), False)
 
-            fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-            video = cv2.VideoWriter(fullString + '/video.avi', fourcc, 5, (x, y), False)
-
-            for img in env.images:
-                img = img * 255.0
-                video.write(img.astype('uint8'))
-            video.release()
+                for img in env.images:
+                    # img = img * 255.0
+                    video.write(img.astype('uint8'))
+                video.release()
             env.images = []
         env.gameLog = ""
 

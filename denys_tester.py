@@ -2,7 +2,6 @@ import os
 import sys
 import time
 
-from moviepy.editor import *
 import numpy
 import numpy as np
 from matplotlib import pyplot as plt

@@ -476,6 +476,7 @@ class BrawlEnv(ExternalEnv):
 
         # grayscale_image = resize(grayscale_image, (y, x))
         grayscale_image = cv2.resize(grayscale_image, (x,y), interpolation=cv2.INTER_AREA)
+        self.images.append(grayscale_image)
         grayscale_image = grayscale_image / 255.0
         # plt.subplot(1, 1, 1), plt.imshow(grayscale_image, 'gray', vmin=0, vmax=1)
         # plt.show()
@@ -589,7 +590,7 @@ class BrawlEnv(ExternalEnv):
         #     reward += (rewardAmount / modifier)
         #     self.actionsTaken = self.actionsTaken + 1
 
-        self.images.append(grayscale_image)
+
 
         return grayscale_image_CNN, reward, self.gameOver
 
