@@ -104,6 +104,7 @@ epochNum = 0
 needReset = False
 
 numActions = 0
+old_id = None
 
 while True:
 
@@ -113,29 +114,31 @@ while True:
     if numActions >= 3001:
         print("probably hit a bug, made a recording and crashed")
 
-        # this would be 10 minute long game
-        if len(env.images) <= 3000:
 
+        folderString = f"error-{round(runningReward, 4)}-{epochNum}-{runningCounter}"
+        fullString = os.getcwd() + "/replays/" + folderString
+        Path(fullString).mkdir(parents=True, exist_ok=True)
 
-            folderString = f"error-{round(runningReward, 4)}-{epochNum}-{runningCounter}"
-            fullString = os.getcwd() + "/replays/" + folderString
-            Path(fullString).mkdir(parents=True, exist_ok=True)
-
-            f = open(fullString + "/log.txt", "a")
-            f.write(env.gameLog)
+        f = open(fullString + "/log.txt", "a")
+        f.write(env.gameLog)
 
 
 
-            fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-            video = cv2.VideoWriter(fullString + '/video.avi', fourcc, 5, (x, y), False)
+        fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+        video = cv2.VideoWriter(fullString + '/video.avi', fourcc, 5, (x, y), False)
 
-            for img in env.images:
-                # img = img * 255.0
-                video.write(img.astype('uint8'))
-            video.release()
-            env.images = []
+        for img in env.images:
+            # img = img * 255.0
+            video.write(img.astype('uint8'))
+        video.release()
+        env.images = []
+        import datetime
 
-            sys.exit()
+        now = datetime.datetime.now()
+        print("Current date and time: ")
+        print(str(now))
+
+        sys.exit()
 
     elapsed_time = time.time() - actionTime
     if elapsed_time < actionTimeOut:
@@ -168,6 +171,8 @@ while True:
 
     action = None
 
+
+
     action = client.get_action(episode_id=episode_id, observation=gameObservation)
 
     if needReset:
@@ -179,11 +184,16 @@ while True:
             client.update_policy_weights()
             print('finished updating weights')
 
+        time.sleep(0.25)
+        env.refreshWindow()
+        time.sleep(0.25)
         # env.releaseAllKeys()
         env.restartRound()
         needReset = False
         reward = 0
         gameOver = False
+
+
 
 
 
@@ -204,13 +214,16 @@ while True:
     # print('logged returns')
     # Updating the model after every game in case there is a new one
 
-    if gameOver:
+    numActions = numActions + 1
+
+    if gameOver and numActions > 100:
 
         # if elapsed_time > 20:
         #     print("restarting due to elapsed time")
 
         env.releaseAllKeys()
         env.resetHP()
+        numActions = 0
 
         if reward <= -1:
             print(f"GAME OVER! WE Lost final reward: {runningReward}! Number of actions: {runningCounter}")
@@ -222,7 +235,7 @@ while True:
 
         env.gameLog += str(env.rewards)
 
-        if runningReward >= -2.5:
+        if runningReward >= -0.66:
 
 
             folderString = f"reward-{round(runningReward, 4)}-{epochNum}-{runningCounter}"
@@ -263,8 +276,9 @@ while True:
         #     print(gameObservation)
         #     print("Not lined up 3")
         #     sys.exit()
-
+        old_id = episode_id
         client.end_episode(episode_id=episode_id, observation=finalObs)
+
         # print('ended episode')
         episode_id = client.start_episode(episode_id=None)
         # print('started new episode')
@@ -274,6 +288,7 @@ while True:
         # env.restartRound()
         # print('round restarted')
         needReset = True
+        time.sleep(0.25)
 
     # print('finished logging step')
 

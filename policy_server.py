@@ -34,7 +34,7 @@ DEFAULT_CONFIG = with_common_config({
     "rollout_fragment_length": 16,
     # Number of timesteps collected for each SGD round. This defines the size
     # of each SGD epoch.
-    "train_batch_size": 4096,
+    "train_batch_size": 6144,
     # Total SGD batch size across all devices for SGD. This defines the
     # minibatch size within each epoch.
     "sgd_minibatch_size": 256,
@@ -63,12 +63,12 @@ DEFAULT_CONFIG = with_common_config({
         'use_attention': True,
         "max_seq_len": 125,
         "attention_num_transformer_units": 1,
-        "attention_dim": 512,
+        "attention_dim": 1024,
         "attention_memory_inference": 125,
         "attention_memory_training": 125,
         "attention_num_heads": 8,
         "attention_head_dim": 64,
-        "attention_position_wise_mlp_dim": 256,
+        "attention_position_wise_mlp_dim": 512,
         "attention_use_n_prev_actions": 0,
         "attention_use_n_prev_rewards": 0,
         "attention_init_gru_gate_bias": 2.0,
@@ -214,4 +214,4 @@ tune.run(trainer,
          config=DEFAULT_CONFIG, name=name, keep_checkpoints_num=None, checkpoint_score_attr="episode_reward_mean",
          max_failures=99,
          # restore="C:\\Users\\denys\\ray_results\\mediumbrawl-attention-256Att-128MLP-L2\\PPOTrainer_RandomEnv_1e882_00000_0_2022-06-02_15-13-44\\checkpoint_000028\\checkpoint-28",
-         checkpoint_freq=1, checkpoint_at_end=True)
+         checkpoint_freq=5, checkpoint_at_end=True)

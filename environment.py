@@ -33,8 +33,8 @@ def loadDigits():
             digitsList.append((str(i), img))
     return digitsList
 
-def sigmoidHP (hp):
 
+def sigmoidHP(hp):
     # if hp < 0.33:
     #     return 0
 
@@ -42,8 +42,8 @@ def sigmoidHP (hp):
     mapMin = -3.5
     mapMax = 0.5
     if hp >= 1:
-        hp=0.99999
-    hpDiff = (1-hp)
+        hp = 0.99999
+    hpDiff = (1 - hp)
 
     # Takes hp as percent (0.33 to 1), remaps that value between (-mapMin and mapMax)
     # hp_remap = (hp -lowerBound) * (mapMax - mapMin) / hpDiff + mapMin
@@ -57,8 +57,9 @@ def sigmoidHP (hp):
     hp_remap = low2 + (hp - low1) * (high2 - low2) / (high1 - low1)
     # print(f"hp before: {hp} --- hp after: {hp_remap}")
     # Apply sigmoid function to remapped value
-    hp_sigmoid = 1/(1+math.e**-hp_remap) + 0.33
+    hp_sigmoid = 1 / (1 + math.e ** -hp_remap) + 0.33
     return hp_sigmoid
+
 
 def imageGrab(x=0, y=0, w=0, h=0, grabber=None):
     image = numpy.array(grabber.grab({"top": y, "left": x, "width": w, "height": h}))
@@ -229,13 +230,16 @@ class BrawlEnv(ExternalEnv):
         win.activate()
         ctypes.windll.user32.SetProcessDPIAware()
 
-        hwnd = win32gui.FindWindow(None, 'Brawlhalla')
-        win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-        win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-        win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
-                              win32con.SWP_SHOWWINDOW | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-
-        win32gui.MoveWindow(hwnd, 0, 0, width, height, True)
+        # hwnd = win32gui.FindWindow(None, 'Brawlhalla')
+        # win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+        # win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+        # win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+        #                       win32con.SWP_SHOWWINDOW | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+        #
+        # win32gui.MoveWindow(hwnd, 0, 0, width, height, True)
+        # win32gui.SetForegroundWindow(hwnd)
+        # hwnd = win32gui.FindWindowEx(0, 0, 0, "Brawlhalla")
+        # win32gui.SetForegroundWindow(hwnd)
 
         sct = mss.mss()
         time.sleep(1)
@@ -255,7 +259,7 @@ class BrawlEnv(ExternalEnv):
         self.lastAction = time.time()
         self.actionRewards = 0
         self.rewards = {"damage_dealt": 0, "damage_taken": 0, "deaths": 0, "kills": 0, "win": 0, "loss": 0}
-        self.tempMyStock= 3
+        self.tempMyStock = 3
         self.tempEnemyStock = 3
         self.gameLog = ""
         self.images = []
@@ -297,6 +301,31 @@ class BrawlEnv(ExternalEnv):
         self.gameOver = False
 
         print('got past main loop')
+
+    def refreshWindow(self):
+
+        width = 640
+        height = 480
+        windows = pygetwindow.getWindowsWithTitle('Brawlhalla')
+        win = None
+
+        for window in windows:
+            if window.title == 'Brawlhalla':
+                win = window
+        win.size = (width, height)
+        win.moveTo(0, 0)
+        win.activate()
+        ctypes.windll.user32.SetProcessDPIAware()
+        # hwnd = win32gui.FindWindow(None, 'Brawlhalla')
+        # win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+        # win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+        # win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+        #                       win32con.SWP_SHOWWINDOW | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+        #
+        # win32gui.MoveWindow(hwnd, 0, 0, width, height, True)
+        # win32gui.SetForegroundWindow(hwnd)
+        # hwnd = win32gui.FindWindowEx(0, 0, 0, "Brawlhalla")
+        # win32gui.SetForegroundWindow(hwnd)
 
     def releaseAllKeys(self, Force=False):
 
@@ -429,23 +458,9 @@ class BrawlEnv(ExternalEnv):
         self.enemyHealth = 1.0
         self.myHealth = 1.0
 
-    def restartMatch(self):
 
-        for i in range(7):
-            keyHold(KEY_C)
-            time.sleep(0.1)
-            keyRelease(KEY_C)
-            time.sleep(2)
 
-    def restartRound(self):
-
-        # self.releaseAllKeys()
-        self.resetValues()
-        self.restartMatch()
-
-        print('finished reseting the game')
-
-    def getObservation(self):
+    def getLife(self):
 
         rgb_weights = [0.1140, 0.5870, 0.2989]
 
@@ -456,8 +471,8 @@ class BrawlEnv(ExternalEnv):
         my_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.myStockX:self.myStockX + 10]
         enemy_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
 
-        my_health_img = grayscale_image[self.lifeY:self.lifeY+1, self.lifeX:self.lifeX + 10]
-        enemy_health_img = grayscale_image[self.lifeY:self.lifeY+1, self.enemyLifeX:self.enemyLifeX + 10]
+        my_health_img = grayscale_image[self.lifeY:self.lifeY + 1, self.lifeX:self.lifeX + 10]
+        enemy_health_img = grayscale_image[self.lifeY:self.lifeY + 1, self.enemyLifeX:self.enemyLifeX + 10]
 
         myHealth = countCurrentHealth(my_health_img)
         enemyHealth = countCurrentHealth(enemy_health_img)
@@ -470,12 +485,55 @@ class BrawlEnv(ExternalEnv):
         # #         # # plt.subplot(1, 1, 1) jl, plt.imshow(enemy_stock_img, 'gray', vmin=0, vmax=255)
 
         my_stock = countLife(my_stock_img, self.templates)
-        self.tempMyStock = my_stock
+
         enemy_stock = countLife(enemy_stock_img, self.templates)
+
+        return grayscale_image, my_stock, myHealth, enemy_stock, enemyHealth
+
+    def restartMatch(self):
+
+        limit = 20
+
+        life_result = self.getLife()
+
+        i = 0
+
+        while i < limit and (life_result[1] == -1 and life_result[3] == -1) or i < 4 :
+            keyHold(KEY_C)
+            time.sleep(0.1)
+            keyRelease(KEY_C)
+            time.sleep(1)
+            life_result = self.getLife()
+            i = i + 1
+
+        print(f"Took {i} loops to clear past restart")
+
+    def restartRound(self):
+
+        # self.releaseAllKeys()
+        time.sleep(0.25)
+        self.refreshWindow()
+        time.sleep(0.25)
+        self.resetValues()
+        self.restartMatch()
+
+        print('finished reseting the game')
+
+    def getObservation(self):
+
+        life_result = self.getLife()
+
+        grayscale_image = life_result[0]
+        my_stock = life_result[1]
+        myHealth = life_result[2]
+        enemy_stock = life_result[3]
+        enemyHealth = life_result[4]
+
         self.tempEnemyStock = enemy_stock
+        self.tempMyStock = my_stock
 
         # grayscale_image = resize(grayscale_image, (y, x))
-        grayscale_image = cv2.resize(grayscale_image, (x,y), interpolation=cv2.INTER_AREA)
+        grayscale_image = cv2.resize(grayscale_image, (x, y), interpolation=cv2.INTER_AREA)
         self.images.append(grayscale_image)
         grayscale_image = grayscale_image / 255.0
         # plt.subplot(1, 1, 1), plt.imshow(grayscale_image, 'gray', vmin=0, vmax=1)
@@ -484,7 +542,6 @@ class BrawlEnv(ExternalEnv):
         grayscale_image_CNN = numpy.reshape(grayscale_image, grayscale_image.shape + (1,))
         # print(grayscale_image.shape)
 
-
         reward = 0
 
         gameOver = False
@@ -492,8 +549,9 @@ class BrawlEnv(ExternalEnv):
 
         if my_stock != -1 and enemy_stock != -1:
 
-            print(f"my stock, health: {my_stock}, {round(myHealth / self.maxHP,2)} || {self.myHealth} || - enemy stock, health: {enemy_stock}, {round(enemyHealth / self.maxHP,2)}")
-            self.gameLog += f"my stock, health: {my_stock}, {round(myHealth / self.maxHP,2)} || {self.myHealth} || - enemy stock, health: {enemy_stock}, {round(enemyHealth / self.maxHP,2)}\n"
+            print(
+                f"my stock, health: {my_stock}, {round(myHealth / self.maxHP, 2)} || {self.myHealth} || - enemy stock, health: {enemy_stock}, {round(enemyHealth / self.maxHP, 2)}")
+            self.gameLog += f"my stock, health: {my_stock}, {round(myHealth / self.maxHP, 2)} || {self.myHealth} || - enemy stock, health: {enemy_stock}, {round(enemyHealth / self.maxHP, 2)}\n"
             percentMyHP = myHealth / self.maxHP
             percentEnemyHP = enemyHealth / self.maxHP
 
@@ -502,32 +560,30 @@ class BrawlEnv(ExternalEnv):
             # if enemy_stock < self.enemyStock:
             #     self.enemyHealth = 1
 
-            deltaEnemyHP = self.enemyHealth - (enemyHealth/self.maxHP)
+            deltaEnemyHP = self.enemyHealth - (enemyHealth / self.maxHP)
 
-            deltaMyHP = self.myHealth - (myHealth/self.maxHP)
+            deltaMyHP = self.myHealth - (myHealth / self.maxHP)
 
             # self.rewards = {"damage_dealt": 0, "damage_taken": 0, "deaths": 0, "kills": 0}
 
             if my_stock < self.currentStock:
 
-
                 sigmoid = sigmoidHP(self.myHealth)
                 print(f"feeding in my percent hp: {self.myHealth}= {sigmoid}")
                 self.gameLog += f"feeding in my percent hp: {self.myHealth}= {sigmoid}\n"
-                reward -= sigmoid
-                self.rewards["deaths"] -= sigmoid
+                # reward -= sigmoid
+                # self.rewards["deaths"] -= sigmoid
                 self.currentStock = my_stock
                 self.myHealth = 1.0
 
             elif deltaMyHP > 0 and self.myHealth > percentMyHP:
-                reward -= (deltaMyHP / self.maxHP) / 3.621
+                # reward -= (deltaMyHP / self.maxHP) / 3.621
                 self.myHealth = percentMyHP
-                self.rewards["damage_taken"] -= (deltaMyHP / self.maxHP) / 3.621
-
+                # self.rewards["damage_taken"] -= (deltaMyHP / self.maxHP) / 3.621
 
             if enemy_stock < self.enemyStock:
 
-                #Only awarding a kill if there was some damage dealt to the enemy
+                # Only awarding a kill if there was some damage dealt to the enemy
                 if self.enemyHealth <= 0.7:
                     reward += 0.33
                     self.rewards["kills"] += 0.33
@@ -535,12 +591,9 @@ class BrawlEnv(ExternalEnv):
                 self.enemyHealth = 1.0
 
             elif deltaEnemyHP > 0 and self.enemyHealth > percentEnemyHP:
-                reward += (deltaEnemyHP / self.maxHP) / 2.5
+                reward += deltaEnemyHP / 2.5
                 self.enemyHealth = percentEnemyHP
-                self.rewards["damage_dealt"] += (deltaEnemyHP / self.maxHP) / 2.5
-
-
-
+                self.rewards["damage_dealt"] += deltaEnemyHP / 2.5
 
             self.failedStocks = 0
         elif my_stock == -1 and enemy_stock == -1:
@@ -589,8 +642,6 @@ class BrawlEnv(ExternalEnv):
         # if self.actionsTaken < (500 * modifier):
         #     reward += (rewardAmount / modifier)
         #     self.actionsTaken = self.actionsTaken + 1
-
-
 
         return grayscale_image_CNN, reward, self.gameOver
 
