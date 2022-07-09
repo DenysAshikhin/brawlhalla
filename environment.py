@@ -270,6 +270,9 @@ class BrawlEnv(ExternalEnv):
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
         offSet = findOffset(imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3])
 
+        # offSet = (213, 63, 14, 14)
+
+
         print(f"my x: {gearX} - my Y: {gearY}")
         print(f"my offset: {offSet}")
 
@@ -453,12 +456,11 @@ class BrawlEnv(ExternalEnv):
         self.tempEnemyStock = 3
         self.gameLog = ""
         self.images = []
+        self.pressedKeys = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     def resetHP(self):
         self.enemyHealth = 1.0
         self.myHealth = 1.0
-
-
 
     def getLife(self):
 
@@ -467,9 +469,16 @@ class BrawlEnv(ExternalEnv):
         full_screen_all = imageGrab(x=0, w=self.width, y=0, h=self.height, grabber=self.sct)[:, :, :3]
 
         grayscale_image = np.uint8(np.dot(full_screen_all[..., :3], rgb_weights))
+
+        increase = 2
+        increaseOffset = int(increase / 2)
+
         # Crop out stocks from full screen, format: top y cord, bot y cord, left x cord, right x cord
-        my_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.myStockX:self.myStockX + 10]
-        enemy_stock_img = grayscale_image[self.stockY:self.stockY + 12, self.enemyStockX:self.enemyStockX + 10]
+        # print(self.stockY - increaseOffset)
+        my_stock_img = grayscale_image[self.stockY - increaseOffset: self.stockY + 12 + increaseOffset,
+                       self.myStockX - increaseOffset: self.myStockX + 10 + increaseOffset]
+        enemy_stock_img = grayscale_image[self.stockY - increaseOffset: self.stockY + 12 + increaseOffset,
+                          self.enemyStockX - increaseOffset: self.enemyStockX + 10 + increaseOffset]
 
         my_health_img = grayscale_image[self.lifeY:self.lifeY + 1, self.lifeX:self.lifeX + 10]
         enemy_health_img = grayscale_image[self.lifeY:self.lifeY + 1, self.enemyLifeX:self.enemyLifeX + 10]
@@ -488,6 +497,8 @@ class BrawlEnv(ExternalEnv):
 
         enemy_stock = countLife(enemy_stock_img, self.templates)
 
+        # print(f"my: {my_stock}  - ebeny: {enemy_stock}")
+
         return grayscale_image, my_stock, myHealth, enemy_stock, enemyHealth
 
     def restartMatch(self):
@@ -498,7 +509,7 @@ class BrawlEnv(ExternalEnv):
 
         i = 0
 
-        while i < limit and (life_result[1] == -1 and life_result[3] == -1) or i < 4 :
+        while i < limit and (life_result[1] == -1 and life_result[3] == -1) or i < 4:
             keyHold(KEY_C)
             time.sleep(0.1)
             keyRelease(KEY_C)
@@ -549,8 +560,8 @@ class BrawlEnv(ExternalEnv):
 
         if my_stock != -1 and enemy_stock != -1:
 
-            print(
-                f"my stock, health: {my_stock}, {round(myHealth / self.maxHP, 2)} || {self.myHealth} || - enemy stock, health: {enemy_stock}, {round(enemyHealth / self.maxHP, 2)}")
+            changed = False
+
             self.gameLog += f"my stock, health: {my_stock}, {round(myHealth / self.maxHP, 2)} || {self.myHealth} || - enemy stock, health: {enemy_stock}, {round(enemyHealth / self.maxHP, 2)}\n"
             percentMyHP = myHealth / self.maxHP
             percentEnemyHP = enemyHealth / self.maxHP
@@ -575,10 +586,12 @@ class BrawlEnv(ExternalEnv):
                 # self.rewards["deaths"] -= sigmoid
                 self.currentStock = my_stock
                 self.myHealth = 1.0
+                changed = True
 
             elif deltaMyHP > 0 and self.myHealth > percentMyHP:
                 # reward -= (deltaMyHP / self.maxHP) / 3.621
                 self.myHealth = percentMyHP
+                changed = True
                 # self.rewards["damage_taken"] -= (deltaMyHP / self.maxHP) / 3.621
 
             if enemy_stock < self.enemyStock:
@@ -589,17 +602,23 @@ class BrawlEnv(ExternalEnv):
                     self.rewards["kills"] += 0.33
                 self.enemyStock = enemy_stock
                 self.enemyHealth = 1.0
+                changed = True
 
             elif deltaEnemyHP > 0 and self.enemyHealth > percentEnemyHP:
-                reward += deltaEnemyHP / 2.5
+                reward += (deltaEnemyHP) / 2.5
                 self.enemyHealth = percentEnemyHP
                 self.rewards["damage_dealt"] += deltaEnemyHP / 2.5
+                changed = True
+
+            if changed:
+                print(
+                    f"my stock, health: {my_stock}, {round(myHealth / self.maxHP, 2)} || {self.myHealth} || - enemy stock, health: {enemy_stock}, {round(enemyHealth / self.maxHP, 2)}")
 
             self.failedStocks = 0
-        elif my_stock == -1 and enemy_stock == -1:
-            forceEnd = True
-        else:
-            self.failedStocks = self.failedStocks + 1
+        # elif my_stock == -1 and enemy_stock == -1:
+        #     forceEnd = True
+        # else:
+        #     self.failedStocks = self.failedStocks + 1
 
         if self.gameOver == False:
             if enemy_stock == 0:
@@ -623,22 +642,22 @@ class BrawlEnv(ExternalEnv):
         #         reward -= 1
         #         # reward -= 0.33 * self.enemyStock
 
-        modifier = 1
-        maxLengthGame = 200
-        actionRewardMax = 1.25
-        actionPerSecond = actionRewardMax / maxLengthGame  # Max negative is -2
-        elapsedTime = time.time() - self.lastAction
+        # modifier = 1
+        # maxLengthGame = 200
+        # actionRewardMax = 1.25
+        # actionPerSecond = actionRewardMax / maxLengthGame  # Max negative is -2
+        # elapsedTime = time.time() - self.lastAction
 
         # rewardAmount = 0.003
         # actions_per_second = 5
         # actionRewards = elapsedTime * rewardAmount * actions_per_second
-        actionRewards = elapsedTime * actionPerSecond
+        # actionRewards = elapsedTime * actionPerSecond
 
         # if self.actionRewards < actionRewardMax:
         #     reward += actionRewards
         #     self.actionRewards += actionRewards
 
-        self.lastAction = time.time()
+        # self.lastAction = time.time()
         # if self.actionsTaken < (500 * modifier):
         #     reward += (rewardAmount / modifier)
         #     self.actionsTaken = self.actionsTaken + 1
@@ -650,55 +669,72 @@ class BrawlEnv(ExternalEnv):
         if self.tempMyStock == -1 or self.tempEnemyStock == -1:
             return 0
 
+        delay = 0.0025
+
+        if self.pressedKeys[0] != actions[0]:
+            if actions[0] == 0:
+                keyRelease(KEY_W)
+            else:
+                keyHold(KEY_W)
+            time.sleep(delay)
+
+        if self.pressedKeys[1] != actions[1]:
+            if actions[1] == 0:
+                keyRelease(KEY_A)
+            else:
+                keyHold(KEY_A)
+            time.sleep(delay)
+
+        if self.pressedKeys[2] != actions[2]:
+            if actions[2] == 0:
+                keyRelease(KEY_S)
+            else:
+                keyHold(KEY_S)
+            time.sleep(delay)
+
+        if self.pressedKeys[3] != actions[3]:
+            if actions[3] == 0:
+                keyRelease(KEY_D)
+            else:
+                keyHold(KEY_D)
+            time.sleep(delay)
+
+        if self.pressedKeys[4] != actions[4]:
+            if actions[4] == 0:
+                keyRelease(KEY_SPACE)
+            else:
+                keyHold(KEY_SPACE)
+            time.sleep(delay)
+
+        if self.pressedKeys[5] != actions[5]:
+            if actions[5] == 0:
+                keyRelease(KEY_H)
+            else:
+                keyHold(KEY_H)
+            time.sleep(delay)
+
+        if self.pressedKeys[6] != actions[6]:
+            if actions[6] == 0:
+                keyRelease(KEY_J)
+            else:
+                keyHold(KEY_J)
+            time.sleep(delay)
+
+        if self.pressedKeys[7] != actions[7]:
+            if actions[7] == 0:
+                keyRelease(KEY_K)
+            else:
+                keyHold(KEY_K)
+            time.sleep(delay)
+
+        if self.pressedKeys[8] != actions[8]:
+            if actions[8] == 0:
+                keyRelease(KEY_L)
+            else:
+                keyHold(KEY_L)
+            time.sleep(delay)
+
         self.pressedKeys = actions
-
-        delay = 0.005
-
-        if actions[0] == 0:
-            keyRelease(KEY_W)
-        else:
-            keyHold(KEY_W)
-        time.sleep(delay)
-        if actions[1] == 0:
-            keyRelease(KEY_A)
-        else:
-            keyHold(KEY_A)
-        time.sleep(delay)
-        if actions[2] == 0:
-            keyRelease(KEY_S)
-        else:
-            keyHold(KEY_S)
-        time.sleep(delay)
-        if actions[3] == 0:
-            keyRelease(KEY_D)
-        else:
-            keyHold(KEY_D)
-        time.sleep(delay)
-        if actions[4] == 0:
-            keyRelease(KEY_SPACE)
-        else:
-            keyHold(KEY_SPACE)
-        time.sleep(delay)
-        if actions[5] == 0:
-            keyRelease(KEY_H)
-        else:
-            keyHold(KEY_H)
-        time.sleep(delay)
-        if actions[6] == 0:
-            keyRelease(KEY_J)
-        else:
-            keyHold(KEY_J)
-        time.sleep(delay)
-        if actions[7] == 0:
-            keyRelease(KEY_K)
-        else:
-            keyHold(KEY_K)
-        time.sleep(delay)
-        if actions[8] == 0:
-            keyRelease(KEY_L)
-        else:
-            keyHold(KEY_L)
-        time.sleep(delay)
         return 0
 
     def run(self):  # if I can't get this to work, try not overriding it in the first place?

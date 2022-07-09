@@ -17,7 +17,7 @@ parser.add_argument('-checkpoint', type=str, help='location of checkpoint to res
 args = parser.parse_args()
 
 DEFAULT_CONFIG = with_common_config({
-    "gamma": 0.996,
+    "gamma": 0.9984,
     # Should use a critic as a baseline (otherwise don't use value baseline;
     # required for using GAE).
     "use_critic": True,
@@ -34,7 +34,7 @@ DEFAULT_CONFIG = with_common_config({
     "rollout_fragment_length": 16,
     # Number of timesteps collected for each SGD round. This defines the size
     # of each SGD epoch.
-    "train_batch_size": 6144,
+    "train_batch_size": 8096,
     # Total SGD batch size across all devices for SGD. This defines the
     # minibatch size within each epoch.
     "sgd_minibatch_size": 256,
@@ -64,8 +64,8 @@ DEFAULT_CONFIG = with_common_config({
         "max_seq_len": 125,
         "attention_num_transformer_units": 1,
         "attention_dim": 1024,
-        "attention_memory_inference": 125,
-        "attention_memory_training": 125,
+        "attention_memory_inference": 128,
+        "attention_memory_training": 128,
         "attention_num_heads": 8,
         "attention_head_dim": 64,
         "attention_position_wise_mlp_dim": 512,
@@ -120,7 +120,7 @@ DEFAULT_CONFIG = with_common_config({
     # Decay schedule for the entropy regularizer.
     "entropy_coeff_schedule": None,
     # PPO clip parameter.
-    "clip_param": 0.2,
+    "clip_param": 0.125,
     # Clip param for the value function. Note that this is sensitive to the
     # scale of the rewards. If your expected V is large, increase this.
     "vf_clip_param": 3.5,

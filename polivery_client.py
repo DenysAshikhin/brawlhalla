@@ -83,12 +83,15 @@ runningReward = 0
 
 counter = 0
 runningCounter = 0
+numLoops = 0
 
 startTime = time.time()
 endTime = time.time()
 
 
-actionTimeOut = 0.2
+fps = 10
+actionTimeOut = 1.0 / fps
+print(f"action time: {actionTimeOut}")
 actionTime = time.time()
 
 env.restartRound()
@@ -105,6 +108,8 @@ needReset = False
 
 numActions = 0
 old_id = None
+
+gameTime = time.time()
 
 while True:
 
@@ -146,6 +151,7 @@ while True:
 
 
 
+
     actionTime = time.time()
 
     # average out to ~30actions a second
@@ -156,8 +162,12 @@ while True:
         print(f"actions per second: {counter}")
         startTime = time.time()
         counter = 0
+        numLoops = numLoops + 1
 
+
+    # timeStart = time.time()
     gameObservation, reward, gameOver = env.getObservation()
+    # print(f"Time to get obs: {time.time() - timeStart}")
     # print('got observation')
     # print(gameObservation)
     # print(env.observation_space.contains(gameObservation))
@@ -172,8 +182,9 @@ while True:
     action = None
 
 
-
+    # timeStart = time.time()
     action = client.get_action(episode_id=episode_id, observation=gameObservation)
+    # print(f"Time to get action: {time.time() - timeStart}")
 
     if needReset:
 
@@ -191,6 +202,9 @@ while True:
         env.restartRound()
         needReset = False
         reward = 0
+        numLoops = 0
+        runningCounter = 0
+        counter = 0
         gameOver = False
 
 
@@ -199,7 +213,9 @@ while True:
 
         print('resetFinished!')
     else:
+        # timeStart = time.time()
         env.act(action)
+        # print(f"Time to act: {time.time() - timeStart}")
         # print('took action')
 
     # print('got action')
@@ -235,7 +251,7 @@ while True:
 
         env.gameLog += str(env.rewards)
 
-        if runningReward >= -0.66:
+        if runningReward >= -0.6:
 
 
             folderString = f"reward-{round(runningReward, 4)}-{epochNum}-{runningCounter}"
@@ -245,9 +261,12 @@ while True:
             f.write( env.gameLog)
 
             #this would be 10 minute long game
-            if len(env.images) <= 3000:
+
+            video_fps = ((runningCounter - counter) / numLoops) + (counter / fps)
+
+            if len(env.images) <= 6000:
                 fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-                video = cv2.VideoWriter(fullString + '/video.avi', fourcc, 5, (x, y), False)
+                video = cv2.VideoWriter(fullString + '/video.avi', fourcc, video_fps, (x, y), False)
 
                 for img in env.images:
                     # img = img * 255.0
@@ -269,6 +288,7 @@ while True:
         runningReward = 0
         runningCounter = 0
         reward = 0
+        numLoops = 0
         # need to call a reset of env here
         finalObs, reward, gameOver = env.getObservation()
 

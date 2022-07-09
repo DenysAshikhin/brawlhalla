@@ -66,20 +66,20 @@ index = 1
 # clip.write_videofile(fullString + "/video.mp4")
 
 
-start = time.time()
-fourcc = cv.VideoWriter_fourcc('M','J','P','G')
-video = cv.VideoWriter(fullString + '/video.avi', fourcc, 4.4, (x,y),False)
-
-
-
-for img in env.images:
-    img = img * 255.0
-    video.write(img.astype('uint8'))
-video.release()
-print(f"Elapsed Time {time.time() - start}")
-
-
-
+# start = time.time()
+# fourcc = cv.VideoWriter_fourcc('M','J','P','G')
+# video = cv.VideoWriter(fullString + '/video.avi', fourcc, 4.4, (x,y),False)
+#
+#
+#
+# for img in env.images:
+#     img = img * 255.0
+#     video.write(img.astype('uint8'))
+# video.release()
+# print(f"Elapsed Time {time.time() - start}")
+#
+#
+#
 
 
 
